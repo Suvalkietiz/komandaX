@@ -1,5 +1,39 @@
-# komandaX
+## komandaX
 
+### How to run the project
+
+- **Install dependencies (root + workspaces)**  
+  In the project root:
+
+  ```bash
+  cd ../komandaX
+  npm install
+  ```
+
+- **Run backend (Node + TypeScript + PostgreSQL-ready)**  
+  Backend dev server runs on `http://localhost:3000`:
+
+  ```bash
+  npm run dev:backend
+  ```
+
+  Minimal requirements:
+  - **Environment variable**: set `DATABASE_URL` for PostgreSQL (for now it’s only used to create a pool in `backend/src/db/db.ts`; you can point it to a real DB later).
+  - Example (macOS, one-off for current shell):
+
+    ```bash
+    export DATABASE_URL="postgres://user:password@localhost:5432/your_db_name"
+    npm run dev:backend
+    ```
+
+- **Run frontend (React + TypeScript + Vite)**  
+  Frontend dev server runs on `http://localhost:5173`:
+
+  ```bash
+  npm run dev:frontend
+  ```
+
+---
 
 The frontend project follows a type-based folder structure, where files are organized according to their technical role. Reusable UI components are placed in the components directory, application logic is implemented in hooks, page-level components are stored in pages, backend communication is handled in services, shared application state is managed in store, and general helper functions are located in utils.
 
