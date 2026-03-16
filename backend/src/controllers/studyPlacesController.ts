@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { createStudyPlace } from "../services/studyPlacesService";
+import { getAllStudyPlaces } from "../services/studyPlacesService";
 
 export const create = async (req: Request, res: Response) => {
   const {
@@ -35,3 +36,12 @@ export const create = async (req: Request, res: Response) => {
   }
 };
 
+export const getAll = async (req: Request, res: Response) => {
+  try {
+    const places = await getAllStudyPlaces();
+    return res.status(200).json(places);
+  } catch (error) {
+    console.error("Error fetching study places", error);
+    return res.status(500).json({ error: "Failed to fetch study places." });
+  }
+};

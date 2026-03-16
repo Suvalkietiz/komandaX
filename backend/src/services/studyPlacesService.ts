@@ -29,3 +29,12 @@ export async function createStudyPlace(
   return result.rows[0];
 }
 
+export async function getAllStudyPlaces(): Promise<StudyPlace[]> {
+  const result = await db.query<StudyPlace>(
+    `SELECT id, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at
+     FROM study_places
+     ORDER BY created_at DESC`
+  );
+  return result.rows;
+}
+
