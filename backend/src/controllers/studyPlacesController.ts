@@ -22,6 +22,7 @@ export const create = async (req: Request, res: Response) => {
 
   try {
     const place = await createStudyPlace({
+      // after expanding CreateStudyPlaceInput under services, i will need update this to pass more fields
       wifiSpeed,
       noiseLevel,
       powerAvailability,
