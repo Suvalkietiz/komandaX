@@ -1,27 +1,32 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { NewStudyPlace } from "./NewStudyPlace";
+import StudyPlacesMap from "../components/StudyPlacesMap";
+
 export function App() {
   return (
     <BrowserRouter>
-    <Routes>
-      <Route path="/" element={
-        <div>This will be our main page</div>
-        }
-      />
-      <Route
-        path="/new-study-place"
-        element={
-          <div className="new-study-page">
-            <div className="app">
-              <h1>New study place Form</h1>
-              <NewStudyPlace />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div>
+              <h1>StudyMap</h1>
+              <StudyPlacesMap />
             </div>
-          </div>
-        }
-      />
-    </Routes>
-  </BrowserRouter>
-
+          }
+        />
+        <Route
+          path="/new-study-place"
+          element={
+            <div className="new-study-page">
+              <div className="app">
+                <h1>New study place Form</h1>
+                <NewStudyPlace />
+              </div>
+            </div>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
