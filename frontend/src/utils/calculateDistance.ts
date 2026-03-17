@@ -16,3 +16,23 @@ export function calculateDistance(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+
+// Filters and sorts places by distance from a given point, within a maxDistance (km)
+export function getFilteredPlaces(
+  places: Array<{ lat: number; lon: number; [key: string]: any }>,
+  userLat: number,
+  userLon: number,
+  maxDistance: number = 2
+): Array<{ distance: number; distanceFormatted: string; [key: string]: any }> {
+  return places
+    .map((place) => {
+      const distance = calculateDistance(userLat, userLon, place.lat, place.lon);
+      return {
+        ...place,
+        distance,
+        distanceFormatted: `${distance.toFixed(1)} km`,
+      };
+    })
+    .filter((place) => place.distance <= maxDistance)
+    .sort((a, b) => a.distance - b.distance);
+}

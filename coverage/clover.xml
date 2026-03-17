@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1773737981736" clover="3.2.0">
+  <project timestamp="1773737981737" name="All files">
+    <metrics statements="13" coveredstatements="13" conditionals="1" coveredconditionals="0" methods="5" coveredmethods="5" elements="19" coveredelements="18" complexity="0" loc="13" ncloc="13" packages="1" files="1" classes="1"/>
+    <file name="calculateDistance.ts" path="C:\Users\gabuk\Documents\GitHub\komandaX\frontend\src\utils\calculateDistance.ts">
+      <metrics statements="13" coveredstatements="13" conditionals="1" coveredconditionals="0" methods="5" coveredmethods="5"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="8" count="8" type="stmt"/>
+      <line num="9" count="8" type="stmt"/>
+      <line num="10" count="8" type="stmt"/>
+      <line num="12" count="8" type="stmt"/>
+      <line num="16" count="8" type="stmt"/>
+      <line num="17" count="8" type="stmt"/>
+      <line num="21" count="1" type="stmt"/>
+      <line num="27" count="3" type="stmt"/>
+      <line num="29" count="7" type="stmt"/>
+      <line num="30" count="7" type="stmt"/>
+      <line num="36" count="7" type="stmt"/>
+      <line num="37" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>
