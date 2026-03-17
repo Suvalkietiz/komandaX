@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import { useState } from "react";
 import { NewStudyPlace } from "./NewStudyPlace";
 import SearchBar from "../components/SearchBar";
 import ResultsList from "../components/ResultsList";
+import { calculateDistance } from "../utils/calculateDistance";
 
 export function App() {
   // Coordinates from Nominatim or null if not searched
@@ -14,7 +16,7 @@ export function App() {
   // Track if a search has been performed
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Example: fetch coordinates from Nominatim and then fetch results from backend
+  // Fetch coordinates from Nominatim, fetch results, filter/sort by 2km radius
   const handleSearch = async (address: string) => {
     setLoading(true);
     setHasSearched(true);
@@ -31,11 +33,32 @@ export function App() {
         return;
       }
       const { lat, lon } = geoData[0];
-      setSearchQuery({ lat: parseFloat(lat), lon: parseFloat(lon) });
+      const userLat = parseFloat(lat);
+      const userLon = parseFloat(lon);
+      setSearchQuery({ lat: userLat, lon: userLon });
 
       // 2. Fetch study places from backend (replace URL as needed)
-      const backendRes = await fetch(`/api/study-places?lat=${lat}&lon=${lon}`);
-      const places = await backendRes.json();
+      const backendRes = await fetch(`/api/study-places?lat=${userLat}&lon=${userLon}`);
+      let places = await backendRes.json();
+
+      // 3. Filter and sort by 2km radius using Haversine
+      places = places
+        .map((place: any) => {
+          const distance = calculateDistance(
+            userLat,
+            userLon,
+            place.lat,
+            place.lon
+          );
+          return {
+            ...place,
+            distance,
+            distanceFormatted: `${distance.toFixed(1)} km`,
+          };
+        })
+        .filter((place: any) => place.distance <= 2)
+        .sort((a: any, b: any) => a.distance - b.distance);
+
       setResults(places);
     } catch (err) {
       setResults([]);
