@@ -4,6 +4,7 @@ import { StudyPlacesList } from "../components/StudyPlacesList";
 
 type StudyPlace = {
     id: number;
+    avg_rating: number;
     wifi_speed: string;
     noise_level: string;
     place_type: string;
@@ -21,12 +22,14 @@ export function StudyPlacesPage() {
         power_availability: "",
         working_hours: "",
     });
+
     const [sort, setSort] = useState("newest");
 
      useEffect(() => {
     const mockPlaces: StudyPlace[] = [
       {
         id: 1,
+        avg_rating: 4.5,
         wifi_speed: "fast",
         noise_level: "low",
         place_type: "library",
@@ -36,6 +39,7 @@ export function StudyPlacesPage() {
       },
       {
         id: 2,
+        avg_rating: 4,
         wifi_speed: "slow",
         noise_level: "medium",
         place_type: "cafe",
@@ -45,12 +49,23 @@ export function StudyPlacesPage() {
       },
       {
         id: 3,
+        avg_rating: 5,
         wifi_speed: "medium",
         noise_level: "high",
         place_type: "bar",
         power_availability: "insufficient",
         working_hours: "08:00-20:00",
         created_at: "2026-03-16T20:00:00Z"
+      },
+      {
+        id: 4,
+        avg_rating: 5,
+        wifi_speed: "fast",
+        noise_level: "high",
+        place_type: "cafe",
+        power_availability: "insufficient",
+        working_hours: "08:00-20:00",
+        created_at: "2026-03-16T22:00:00Z"
       }
     ];
     setPlaces(mockPlaces);
@@ -66,11 +81,42 @@ export function StudyPlacesPage() {
     );
   });
 
+  let sorted = [...filtered];
+
+  if (sort === "newest") {
+      sorted.sort(
+        (a, b) =>
+           new Date(b.created_at).getTime() -
+           new Date(a.created_at).getTime()
+      );
+  }
+
+  if (sort === "rating") {
+      sorted.sort((a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0));    
+  }
+
+  if (sort === "distance") {
+      sorted.sort((a, b) => a.id - b.id); // mock
+  }
+
+  if (sort === "popularity") {
+      sorted.sort((a, b) => b.id - a.id); // mock
+  }
 
     return (
     <div>
+      <label>
+    Sort by: 
+    <select value={sort} onChange={(e) => setSort(e.target.value)}>
+      <option value="newest">Newest</option>
+      <option value="rating">Rating</option>
+      <option value="distance">Distance</option>
+      <option value="popularity">Popularity</option>
+    </select>
+  </label>
+
       <FiltersPanel filters={filters} onChange={setFilters} />
-      <StudyPlacesList places={filtered} />
+      <StudyPlacesList places={sorted} />
     </div>
   );
 

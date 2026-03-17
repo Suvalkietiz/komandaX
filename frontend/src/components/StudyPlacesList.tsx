@@ -1,5 +1,6 @@
 type Place = {
   id: number;
+  avg_rating: number;
   wifi_speed: string;
   noise_level: string;
   place_type: string;
@@ -16,10 +17,12 @@ export function StudyPlacesList({ places }: Props) {
       {places.map((p) => (
         <div key={p.id} className="place-card">
           <h3>{p.place_type}</h3>
+          <p>rating: {p.avg_rating}</p>
           <p>WiFi speed: {p.wifi_speed}</p>
           <p>Noise level: {p.noise_level}</p>
           <p>Power availability: {p.power_availability}</p>
           <p>Working hours: {p.working_hours}</p>
+          <p>Created: {p.created_at}</p>
         </div>
       ))}
     </div>
