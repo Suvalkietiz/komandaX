@@ -54,4 +54,15 @@ describe("validatePublicStudyPlace", () => {
 
     await expect(validatePublicStudyPlace("Neatpažįstama vieta")).rejects.toThrow(PUBLIC_STUDY_PLACE_ERROR);
   });
+
+  it("throws the public study space error when geocoding returns malformed coordinates", async () => {
+    const fetchMock = jest.fn().mockResolvedValueOnce({
+      json: async () => [{ lat: "not-a-number", lon: "25.3000" }]
+    });
+
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await expect(validatePublicStudyPlace("Sugadinta koordinatė")).rejects.toThrow(PUBLIC_STUDY_PLACE_ERROR);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });

@@ -47,9 +47,17 @@ async function geocodeAddress(address: string): Promise<ValidatedStudyPlaceLocat
     return null;
   }
 
+  const lat = Number.parseFloat(results[0].lat);
+  const lon = Number.parseFloat(results[0].lon);
+
+  // Defensive check: reject malformed coordinate payloads from external API.
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return null;
+  }
+
   return {
-    lat: Number.parseFloat(results[0].lat),
-    lon: Number.parseFloat(results[0].lon)
+    lat,
+    lon
   };
 }
 
