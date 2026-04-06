@@ -1,12 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 
 import { useState } from "react";
 import { NewStudyPlace } from "./NewStudyPlace";
+import { StudyPlaceDetail } from "./StudyPlaceDetail";
 import SearchBar from "../components/SearchBar";
 import ResultsList from "../components/ResultsList";
+import StudyPlacesMap from "../components/StudyPlacesMap";
 import { calculateDistance } from "../utils/calculateDistance";
 
-export function App() {
+function AppContent() {
+  const navigate = useNavigate();
   // Coordinates from Nominatim or null if not searched
   const [searchQuery, setSearchQuery] = useState<{ lat: number; lon: number } | null>(null);
   // Results array from backend
@@ -69,12 +72,12 @@ export function App() {
   };
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div className="max-w-4xl mx-auto p-4">
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <div className="p-4">
+            <div className="max-w-4xl mx-auto mb-8">
               <h1 className="text-2xl font-bold mb-4">Study Map</h1>
               <SearchBar onSearch={handleSearch} />
               <div className="mt-6">
@@ -86,20 +89,36 @@ export function App() {
                 )}
               </div>
             </div>
-          }
-        />
-        <Route
-          path="/new-study-place"
-          element={
-            <div className="new-study-page">
-              <div className="app">
-                <h1>New study place Form</h1>
-                <NewStudyPlace />
-              </div>
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-xl font-bold mb-4">Žemėlapis</h2>
+              <StudyPlacesMap onPlaceInfo={(id) => navigate(`/study-place/${id}`)} />
             </div>
-          }
-        />
-      </Routes>
+          </div>
+        }
+      />
+      <Route
+        path="/study-place/:id"
+        element={<StudyPlaceDetail />}
+      />
+      <Route
+        path="/new-study-place"
+        element={
+          <div className="new-study-page">
+            <div className="app">
+              <h1>New study place Form</h1>
+              <NewStudyPlace />
+            </div>
+          </div>
+        }
+      />
+    </Routes>
+  );
+}
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }

@@ -2,6 +2,7 @@
   "name": "komandaX-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -9,18 +10,24 @@
     "lint": "eslint src --ext ts,tsx --max-warnings=0"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.0.1",
+    "react-router-dom": "^6.21.0"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.7.0",
+    "autoprefixer": "^10.4.17",
     "eslint": "^9.8.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.10",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.1",
     "typescript": "^5.6.3",
     "vite": "^5.3.3"
   }
 }
-

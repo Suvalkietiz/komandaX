@@ -10,6 +10,10 @@ type StudyPlace = {
   position: LatLngExpression;
 };
 
+interface StudyPlacesMapProps {
+  onPlaceInfo?: (placeId: number) => void;
+}
+
 const markerIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -17,7 +21,7 @@ const markerIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
-export default function StudyPlacesMap() {
+export default function StudyPlacesMap({ onPlaceInfo }: StudyPlacesMapProps) {
   const [selectedPlace, setSelectedPlace] = useState<StudyPlace | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [currentStatus, setCurrentStatus] = useState("");
@@ -52,13 +56,13 @@ export default function StudyPlacesMap() {
   return (
     <div>
       <MapContainer
-        center={[54.6872, 25.2797]}
+        center={[54.6872, 25.2797] as LatLngExpression}
         zoom={13}
         style={{ height: "500px", width: "100%", borderRadius: "12px" }}
       >
         <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; OpenStreetMap contributors"
         />
 
         {places.map((place) => (
@@ -69,10 +73,21 @@ export default function StudyPlacesMap() {
           >
             <Popup>
               <div>
-                <h3>{place.name}</h3>
-                <p>Statusas: {place.status}</p>
-                <button type="button" onClick={() => openSettings(place)}>
-                  Statuso nustatymai
+                <h3 className="font-bold mb-2">{place.name}</h3>
+                <p className="mb-3">Statusas: {place.status}</p>
+                <button
+                  type="button"
+                  onClick={() => onPlaceInfo?.(place.id)}
+                  className="bg-blue-600 text-white px-3 py-1 rounded mr-2 hover:bg-blue-700 text-sm"
+                >
+                  Informacija
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openSettings(place)}
+                  className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-sm"
+                >
+                  Statusas
                 </button>
               </div>
             </Popup>
