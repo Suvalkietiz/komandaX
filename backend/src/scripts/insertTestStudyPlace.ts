@@ -1,0 +1,31 @@
+import { db } from "../db/db";
+
+async function insertTestStudyPlace() {
+  const result = await db.query(
+    `INSERT INTO study_places
+      (name, address, osm_id, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at)
+    VALUES
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+    RETURNING id`,
+    [
+      "Testinė biblioteka",
+      "Testo g. 1, Vilnius",
+      "osm123",
+      54.6872,
+      25.2797,
+      true,
+      "Greitas",
+      "Tylu",
+      "Yra",
+      "library",
+      "08:00-20:00"
+    ]
+  );
+  console.log("Test study place inserted with id:", result.rows[0].id);
+  await db.end();
+}
+
+insertTestStudyPlace().catch(e => {
+  console.error(e);
+  db.end();
+});
