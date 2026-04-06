@@ -18,11 +18,13 @@ type NominatimSearchResult = {
 };
 
 type NominatimReverseResult = {
+	osm_id?: string | number;
 	category?: string;
 	type?: string;
 };
 
 export type ValidatedStudyPlaceLocation = {
+	osmId: string;
 	lat: number;
 	lon: number;
 };
@@ -49,6 +51,7 @@ async function geocodeAddress(address: string): Promise<ValidatedStudyPlaceLocat
 	}
 
 	return {
+		osmId: "",
 		lat: Number.parseFloat(results[0].lat),
 		lon: Number.parseFloat(results[0].lon)
 	};
@@ -85,5 +88,13 @@ export async function validatePublicStudyPlace(address: string): Promise<Validat
 		throw new Error(PUBLIC_STUDY_PLACE_ERROR);
 	}
 
-	return coordinates;
+	if (reverseResult.osm_id === undefined || reverseResult.osm_id === null) {
+		throw new Error(PUBLIC_STUDY_PLACE_ERROR);
+	}
+
+	return {
+		osmId: String(reverseResult.osm_id),
+		lat: coordinates.lat,
+		lon: coordinates.lon,
+	};
 }

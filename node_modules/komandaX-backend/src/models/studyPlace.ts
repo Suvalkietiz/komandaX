@@ -2,6 +2,7 @@ export interface StudyPlace {
   id: number;
   name: string;
   address: string;
+  osm_id: string;
   lat: number;
   lon: number;
   verified: boolean;

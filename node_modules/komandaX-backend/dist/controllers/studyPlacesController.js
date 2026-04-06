@@ -15,10 +15,11 @@ const create = async (req, res) => {
         return res.status(400).json({ error: "All fields are required." });
     }
     try {
-        const { lat, lon } = await (0, osmValidationService_1.validatePublicStudyPlace)(address);
+        const { osmId, lat, lon } = await (0, osmValidationService_1.validatePublicStudyPlace)(address);
         const place = await (0, studyPlacesService_1.createStudyPlace)({
             name,
             address,
+            osmId,
             lat,
             lon,
             verified: true,

@@ -26,11 +26,12 @@ export const create = async (req: Request, res: Response) => {
   }
 
   try {
-    const { lat, lon } = await validatePublicStudyPlace(address);
+    const { osmId, lat, lon } = await validatePublicStudyPlace(address);
 
     const place = await createStudyPlace({
       name,
       address,
+      osmId,
       lat,
       lon,
       verified: true,
