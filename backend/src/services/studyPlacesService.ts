@@ -76,6 +76,17 @@ function toBooleanOutlets(value: string | null | undefined): boolean {
   return normalized.includes("yes") || normalized.includes("yra") || normalized.includes("true");
 }
 
+export async function getStudyPlaceById(id: number): Promise<StudyPlace | null> {
+  const result = await db.query<StudyPlace>(
+    `SELECT id, name, address, osm_id, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at
+     FROM study_places
+     WHERE id = $1`,
+    [id]
+  );
+
+  return result.rows[0] ?? null;
+}
+
 export async function getStudyPlaces(): Promise<StudyPlaceListItem[]> {
   const result = await db.query<StudyPlaceRow>(
     `SELECT

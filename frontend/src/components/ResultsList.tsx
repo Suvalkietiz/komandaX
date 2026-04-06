@@ -30,6 +30,7 @@ const ResultsList: React.FC<ResultsListProps> = ({ results }) => {
       {results.map(place => (
         <StudySpaceCard
           key={place.id}
+          id={place.id}
           name={place.name}
           address={place.address}
           wifi_speed={place.wifi_speed ?? 'Nežinoma'}

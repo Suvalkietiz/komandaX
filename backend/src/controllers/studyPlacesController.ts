@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createStudyPlace, getStudyPlaces } from "../services/studyPlacesService";
+import { createStudyPlace, getStudyPlaces, getStudyPlaceById } from "../services/studyPlacesService";
 import { PUBLIC_STUDY_PLACE_ERROR, validatePublicStudyPlace } from "../services/osmValidationService";
 
 export const create = async (req: Request, res: Response) => {
@@ -59,6 +59,27 @@ export const getAll = async (_req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching study places", error);
     return res.status(500).json({ error: "Failed to fetch study places." });
+  }
+};
+
+export const getById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const placeId = Number(id);
+
+  if (!Number.isInteger(placeId) || placeId <= 0) {
+    return res.status(400).json({ error: "Invalid place id." });
+  }
+
+  try {
+    const place = await getStudyPlaceById(placeId);
+    if (!place) {
+      return res.status(404).json({ error: "Study place not found." });
+    }
+
+    return res.status(200).json(place);
+  } catch (error) {
+    console.error("Error fetching study place by id", error);
+    return res.status(500).json({ error: "Failed to fetch study place." });
   }
 };
 

@@ -5,6 +5,7 @@ const router = Router();
 
 router.post("/study-places", studyPlacesController.create);
 router.get("/study-places", studyPlacesController.getAll);
+router.get("/study-places/:id", studyPlacesController.getById);
 
 
 // Health check / blank starter route

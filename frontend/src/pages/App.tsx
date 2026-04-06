@@ -2,8 +2,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { useState } from "react";
 import { NewStudyPlace } from "./NewStudyPlace";
+import StudyPlaceDetails from "./StudyPlaceDetails";
 import SearchBar from "../components/SearchBar";
 import ResultsList from "../components/ResultsList";
+import StudyPlacesMap from "../components/StudyPlacesMap";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "../services/nominatimService";
 
@@ -73,6 +75,9 @@ export function App() {
               <h1 className="text-2xl font-bold mb-4">Study Map</h1>
               <SearchBar onSearch={handleSearch} />
               <div className="mt-6">
+                <StudyPlacesMap />
+              </div>
+              <div className="mt-6">
                 {loading && <div className="text-center text-blue-600">Ieškoma...</div>}
                 {!loading && hasSearched ? (
                   <ResultsList results={results} />
@@ -94,6 +99,7 @@ export function App() {
             </div>
           }
         />
+        <Route path="/study-place/:id" element={<StudyPlaceDetails />} />
       </Routes>
     </BrowserRouter>
   );

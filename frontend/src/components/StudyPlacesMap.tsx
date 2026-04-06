@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import type { LatLngExpression } from "leaflet";
@@ -43,10 +44,16 @@ export default function StudyPlacesMap() {
     },
   ];
 
+  const navigate = useNavigate();
+
   const openSettings = (place: StudyPlace) => {
     setSelectedPlace(place);
     setCurrentStatus(place.status);
     setShowSettings(true);
+  };
+
+  const openDetails = (place: StudyPlace) => {
+    navigate(`/study-place/${place.id}`);
   };
 
   return (
@@ -71,9 +78,14 @@ export default function StudyPlacesMap() {
               <div>
                 <h3>{place.name}</h3>
                 <p>Statusas: {place.status}</p>
-                <button type="button" onClick={() => openSettings(place)}>
-                  Statuso nustatymai
-                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <button type="button" onClick={() => openSettings(place)}>
+                    Statuso nustatymai
+                  </button>
+                  <button type="button" onClick={() => openDetails(place)}>
+                    Informacija
+                  </button>
+                </div>
               </div>
             </Popup>
           </Marker>

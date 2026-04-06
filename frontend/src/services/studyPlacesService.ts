@@ -11,12 +11,44 @@ type StudyPlaceFormInput = {
 type StudyPlaceResponse = {
   name?: string;
   address?: string;
+  osm_id?: string;
+  lat?: number;
+  lon?: number;
+  verified?: boolean;
   wifi_speed?: string;
   noise_level?: string;
   power_availability?: string;
   place_type?: string;
   working_hours?: string;
+  created_at?: string;
 };
+
+type StudyPlaceDetailsResponse = {
+  id: number;
+  name: string;
+  address: string;
+  osm_id: string;
+  lat: number;
+  lon: number;
+  verified: boolean;
+  wifi_speed: string;
+  noise_level: string;
+  power_availability: string;
+  place_type: string;
+  working_hours: string;
+  created_at: string;
+};
+
+export async function getStudyPlaceById(id: string): Promise<StudyPlaceDetailsResponse> {
+  const response = await fetch(`/api/study-places/${id}`);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to load study place.");
+  }
+
+  return response.json();
+}
 
 export async function createStudyPlace(data: StudyPlaceFormInput): Promise<StudyPlaceResponse> {
   const response = await fetch("/api/study-places", {

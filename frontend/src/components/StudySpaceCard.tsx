@@ -1,6 +1,9 @@
 import React from 'react';
 
+import { useNavigate } from "react-router-dom";
+
 interface StudySpaceCardProps {
+  id: string | number;
   name: string;
   address: string;
   wifi_speed: string;
@@ -10,6 +13,7 @@ interface StudySpaceCardProps {
 }
 
 const StudySpaceCard: React.FC<StudySpaceCardProps> = ({
+  id,
   name,
   address,
   wifi_speed,
@@ -17,6 +21,8 @@ const StudySpaceCard: React.FC<StudySpaceCardProps> = ({
   has_outlets,
   distance_km,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white rounded shadow p-4 border flex flex-col gap-2 min-w-[250px]">
       <h3 className="font-bold text-lg">{name}</h3>
@@ -31,6 +37,13 @@ const StudySpaceCard: React.FC<StudySpaceCardProps> = ({
       <div className="mt-2 text-right text-xs text-gray-500">
         Atstumas: {distance_km.toFixed(1)} km
       </div>
+      <button
+        type="button"
+        onClick={() => navigate(`/study-place/${id}`)}
+        className="mt-3 rounded bg-blue-600 text-white px-3 py-2 text-sm hover:bg-blue-700"
+      >
+        Informacija
+      </button>
     </div>
   );
 };
