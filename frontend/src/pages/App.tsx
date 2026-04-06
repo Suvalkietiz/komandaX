@@ -5,6 +5,7 @@ import { NewStudyPlace } from "./NewStudyPlace";
 import SearchBar from "../components/SearchBar";
 import ResultsList from "../components/ResultsList";
 import { calculateDistance } from "../utils/calculateDistance";
+import { geocodeAddress } from "../services/nominatimService";
 
 export function App() {
   // Coordinates from Nominatim or null if not searched
@@ -21,20 +22,14 @@ export function App() {
     setLoading(true);
     setHasSearched(true);
     try {
-      // 1. Geocode address using Nominatim
-      const nominatimRes = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-      );
-      const geoData = await nominatimRes.json();
-      if (!geoData.length) {
+      const coordinates = await geocodeAddress(address);
+      if (!coordinates) {
         setSearchQuery(null);
         setResults([]);
         setLoading(false);
         return;
       }
-      const { lat, lon } = geoData[0];
-      const userLat = parseFloat(lat);
-      const userLon = parseFloat(lon);
+      const { lat: userLat, lon: userLon } = coordinates;
       setSearchQuery({ lat: userLat, lon: userLon });
 
       // 2. Fetch study places from backend (replace URL as needed)
