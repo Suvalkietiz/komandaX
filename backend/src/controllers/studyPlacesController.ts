@@ -1,8 +1,11 @@
 import type { Request, Response } from "express";
 import { createStudyPlace, getStudyPlaces } from "../services/studyPlacesService";
+import { PUBLIC_STUDY_PLACE_ERROR, validatePublicStudyPlace } from "../services/osmValidationService";
 
 export const create = async (req: Request, res: Response) => {
   const {
+    name,
+    address,
     wifiSpeed,
     noiseLevel,
     powerAvailability,
@@ -11,6 +14,8 @@ export const create = async (req: Request, res: Response) => {
   } = req.body || {};
 
   if (
+    !name ||
+    !address ||
     !wifiSpeed ||
     !noiseLevel ||
     !powerAvailability ||
@@ -21,7 +26,14 @@ export const create = async (req: Request, res: Response) => {
   }
 
   try {
+    const { lat, lon } = await validatePublicStudyPlace(address);
+
     const place = await createStudyPlace({
+      name,
+      address,
+      lat,
+      lon,
+      verified: true,
       wifiSpeed,
       noiseLevel,
       powerAvailability,
@@ -30,6 +42,10 @@ export const create = async (req: Request, res: Response) => {
     });
     return res.status(201).json(place);
   } catch (error) {
+    if (error instanceof Error && error.message === PUBLIC_STUDY_PLACE_ERROR) {
+      return res.status(400).json({ error: PUBLIC_STUDY_PLACE_ERROR });
+    }
+
     console.error("Error inserting study place", error);
     return res.status(500).json({ error: "Failed to save study place." });
   }

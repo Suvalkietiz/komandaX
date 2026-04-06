@@ -3,6 +3,7 @@ module.exports = {
   testMatch: [
     '<rootDir>/frontend/src/utils/**/*.test.ts',
     '<rootDir>/frontend/src/**/*.test.tsx',
+    '<rootDir>/backend/src/**/*.test.ts',
   ],
   setupFilesAfterEnv: ['<rootDir>/frontend/src/test/setupTests.ts'],
   transform: {

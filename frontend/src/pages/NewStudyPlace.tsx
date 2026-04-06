@@ -1,6 +1,10 @@
 import { FormEvent, useState } from "react";
 
+import { createStudyPlace } from "../services/studyPlacesService";
+
 type FormValues = {
+  name: string;
+  address: string;
   wifiSpeed: "slow" | "fast" | "very_fast" | "";
   noiseLevel: "low" | "medium" | "high" | "";
   powerAvailability: "insufficient" | "sufficient" | "";
@@ -10,6 +14,8 @@ type FormValues = {
 
 export function NewStudyPlace() {
   const [values, setValues] = useState<FormValues>({
+    name: "",
+    address: "",
     wifiSpeed: "",
     noiseLevel: "",
     powerAvailability: "",
@@ -34,27 +40,15 @@ export function NewStudyPlace() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/study-places", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(values)
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save study place.");
-      }
-
-      const saved = (await response.json()) as any;
+      const saved = await createStudyPlace(values);
 
       setSubmitted({
-        wifiSpeed: saved.wifi_speed ?? values.wifiSpeed,
-        noiseLevel: saved.noise_level ?? values.noiseLevel,
-        powerAvailability:
-          saved.power_availability ?? values.powerAvailability,
-        placeType: saved.place_type ?? values.placeType,
+        name: (saved.name ?? values.name) as string,
+        address: (saved.address ?? values.address) as string,
+        wifiSpeed: (saved.wifi_speed ?? values.wifiSpeed) as FormValues["wifiSpeed"],
+        noiseLevel: (saved.noise_level ?? values.noiseLevel) as FormValues["noiseLevel"],
+        powerAvailability: (saved.power_availability ?? values.powerAvailability) as FormValues["powerAvailability"],
+        placeType: (saved.place_type ?? values.placeType) as FormValues["placeType"],
         workingHours: saved.working_hours ?? values.workingHours
       });
     } catch (e) {
@@ -69,6 +63,28 @@ export function NewStudyPlace() {
   return (
     <div className="card">
       <form onSubmit={handleSubmit} className="form">
+        <label className="field">
+          <span>Place name</span>
+          <input
+            type="text"
+            value={values.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder="e.g. Central Library"
+            required
+          />
+        </label>
+
+        <label className="field">
+          <span>Address</span>
+          <input
+            type="text"
+            value={values.address}
+            onChange={(e) => handleChange("address", e.target.value)}
+            placeholder="e.g. Gedimino pr. 1, Vilnius"
+            required
+          />
+        </label>
+
         <label className="field">
           <span>WiFi speed</span>
           <select
@@ -154,6 +170,12 @@ export function NewStudyPlace() {
       {submitted && (
         <div className="result">
           <h2>Study place summary</h2>
+          <p>
+            <strong>Name:</strong> {submitted.name}
+          </p>
+          <p>
+            <strong>Address:</strong> {submitted.address}
+          </p>
           <p>
             <strong>WiFi speed:</strong> {submitted.wifiSpeed}
           </p>

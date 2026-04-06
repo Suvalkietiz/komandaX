@@ -2,9 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAll = exports.create = void 0;
 const studyPlacesService_1 = require("../services/studyPlacesService");
+const osmValidationService_1 = require("../services/osmValidationService");
 const create = async (req, res) => {
-    const { wifiSpeed, noiseLevel, powerAvailability, placeType, workingHours } = req.body || {};
-    if (!wifiSpeed ||
+    const { name, address, wifiSpeed, noiseLevel, powerAvailability, placeType, workingHours } = req.body || {};
+    if (!name ||
+        !address ||
+        !wifiSpeed ||
         !noiseLevel ||
         !powerAvailability ||
         !placeType ||
@@ -12,7 +15,13 @@ const create = async (req, res) => {
         return res.status(400).json({ error: "All fields are required." });
     }
     try {
+        const { lat, lon } = await (0, osmValidationService_1.validatePublicStudyPlace)(address);
         const place = await (0, studyPlacesService_1.createStudyPlace)({
+            name,
+            address,
+            lat,
+            lon,
+            verified: true,
             wifiSpeed,
             noiseLevel,
             powerAvailability,
@@ -22,6 +31,9 @@ const create = async (req, res) => {
         return res.status(201).json(place);
     }
     catch (error) {
+        if (error instanceof Error && error.message === osmValidationService_1.PUBLIC_STUDY_PLACE_ERROR) {
+            return res.status(400).json({ error: osmValidationService_1.PUBLIC_STUDY_PLACE_ERROR });
+        }
         console.error("Error inserting study place", error);
         return res.status(500).json({ error: "Failed to save study place." });
     }

@@ -5,9 +5,14 @@ exports.getStudyPlaces = getStudyPlaces;
 const db_1 = require("../db/db");
 async function createStudyPlace(data) {
     const result = await db_1.db.query(`INSERT INTO study_places
-     (wifi_speed, noise_level, power_availability, place_type, working_hours)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING id, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at`, [
+     (name, address, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+     RETURNING id, name, address, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at`, [
+        data.name,
+        data.address,
+        data.lat,
+        data.lon,
+        data.verified,
         data.wifiSpeed,
         data.noiseLevel,
         data.powerAvailability,
