@@ -35,6 +35,7 @@ type StudyPlaceRow = {
   address?: string | null;
   lat?: number | null;
   lon?: number | null;
+  verified?: boolean | null;
   wifi_speed?: string | null;
   noise_level?: string | null;
   power_availability?: string | null;
@@ -48,6 +49,7 @@ export type StudyPlaceListItem = {
   address: string;
   lat: number | null;
   lon: number | null;
+  verified: boolean;
   wifi_speed: string;
   noise_level: string;
   has_outlets: boolean;
@@ -63,7 +65,24 @@ function toBooleanOutlets(value: string | null | undefined): boolean {
 }
 
 export async function getStudyPlaces(): Promise<StudyPlaceListItem[]> {
-  const result = await db.query<StudyPlaceRow>("SELECT * FROM study_places ORDER BY created_at DESC");
+  const result = await db.query<StudyPlaceRow>(
+    `SELECT
+       id,
+       name,
+       address,
+       lat,
+       lon,
+       verified,
+       wifi_speed,
+       noise_level,
+       power_availability,
+       place_type
+     FROM study_places
+     WHERE verified = TRUE
+       AND lat IS NOT NULL
+       AND lon IS NOT NULL
+     ORDER BY created_at DESC`
+  );
 
   return result.rows.map((row) => ({
     id: String(row.id),
@@ -71,6 +90,7 @@ export async function getStudyPlaces(): Promise<StudyPlaceListItem[]> {
     address: row.address ?? "Adresas nenurodytas",
     lat: row.lat ?? null,
     lon: row.lon ?? null,
+    verified: row.verified ?? false,
     wifi_speed: row.wifi_speed ?? "Nežinoma",
     noise_level: row.noise_level ?? "Nežinomas",
     has_outlets: toBooleanOutlets(row.power_availability),

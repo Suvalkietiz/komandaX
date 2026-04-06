@@ -24,13 +24,29 @@ function toBooleanOutlets(value) {
     return normalized.includes("yes") || normalized.includes("yra") || normalized.includes("true");
 }
 async function getStudyPlaces() {
-    const result = await db_1.db.query("SELECT * FROM study_places ORDER BY created_at DESC");
+    const result = await db_1.db.query(`SELECT
+       id,
+       name,
+       address,
+       lat,
+       lon,
+       verified,
+       wifi_speed,
+       noise_level,
+       power_availability,
+       place_type
+     FROM study_places
+     WHERE verified = TRUE
+       AND lat IS NOT NULL
+       AND lon IS NOT NULL
+     ORDER BY created_at DESC`);
     return result.rows.map((row) => ({
         id: String(row.id),
         name: row.name ?? row.place_type ?? `Study place #${row.id}`,
         address: row.address ?? "Adresas nenurodytas",
         lat: row.lat ?? null,
         lon: row.lon ?? null,
+        verified: row.verified ?? false,
         wifi_speed: row.wifi_speed ?? "Nežinoma",
         noise_level: row.noise_level ?? "Nežinomas",
         has_outlets: toBooleanOutlets(row.power_availability),
