@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createStudyPlace } from "../services/studyPlacesService";
+import { createStudyPlace, getStudyPlaces } from "../services/studyPlacesService";
 
 export const create = async (req: Request, res: Response) => {
   const {
@@ -32,6 +32,16 @@ export const create = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error inserting study place", error);
     return res.status(500).json({ error: "Failed to save study place." });
+  }
+};
+
+export const getAll = async (_req: Request, res: Response) => {
+  try {
+    const places = await getStudyPlaces();
+    return res.status(200).json(places);
+  } catch (error) {
+    console.error("Error fetching study places", error);
+    return res.status(500).json({ error: "Failed to fetch study places." });
   }
 };
 

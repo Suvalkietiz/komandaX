@@ -4,6 +4,7 @@ import * as studyPlacesController from "./controllers/studyPlacesController";
 const router = Router();
 
 router.post("/study-places", studyPlacesController.create);
+router.get("/study-places", studyPlacesController.getAll);
 
 
 // Health check / blank starter route

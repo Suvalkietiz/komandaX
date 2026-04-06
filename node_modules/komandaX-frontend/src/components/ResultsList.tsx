@@ -1,10 +1,15 @@
 import React from 'react';
+import StudySpaceCard from './StudySpaceCard';
 
 export interface StudyPlace {
-  id: string;
+  id: string | number;
   name: string;
   address: string;
-  description?: string;
+  wifi_speed?: string;
+  noise_level?: string;
+  has_outlets?: boolean;
+  distance?: number;
+  distance_km?: number;
 }
 
 interface ResultsListProps {
@@ -23,16 +28,15 @@ const ResultsList: React.FC<ResultsListProps> = ({ results }) => {
   return (
     <div className="grid gap-4 mt-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
       {results.map(place => (
-        <div
+        <StudySpaceCard
           key={place.id}
-          className="bg-white rounded shadow p-4 border hover:shadow-lg transition"
-        >
-          <h3 className="font-bold text-lg mb-2">{place.name}</h3>
-          <p className="text-sm text-gray-600 mb-1">{place.address}</p>
-          {place.description && (
-            <p className="text-gray-700 text-sm mt-2">{place.description}</p>
-          )}
-        </div>
+          name={place.name}
+          address={place.address}
+          wifi_speed={place.wifi_speed ?? 'Nežinoma'}
+          noise_level={place.noise_level ?? 'Nežinomas'}
+          has_outlets={place.has_outlets ?? false}
+          distance_km={place.distance_km ?? place.distance ?? 0}
+        />
       ))}
     </div>
   );
