@@ -38,3 +38,28 @@ export async function getAllStudyPlaces(): Promise<StudyPlace[]> {
   return result.rows;
 }
 
+export async function getFilteredStudyPlaces(filters: Partial<StudyPlace>) {
+  const conditions: string[] = [];
+  const values: any[] = [];
+
+  Object.entries(filters).forEach(([key, value], i) => {
+    if (value !== undefined && value !== "") {
+      values.push(value); 
+      conditions.push(`${key} = $${values.length}`); 
+  }
+  });
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const result = await db.query<StudyPlace>(`
+    SELECT id, avg_rating, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at
+    FROM study_places
+    ${whereClause}
+    ORDER BY created_at DESC
+  `, values);
+
+  return result.rows;
+}
+
+
+
