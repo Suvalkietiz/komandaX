@@ -1,0 +1,25 @@
+{
+  "name": "komandaX-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/pg": "^8.18.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "ts-jest": "^29.4.6"
+  },
+  "dependencies": {
+    "react-router-dom": "^7.13.1"
+  }
+}
