@@ -1,5 +1,4 @@
 import { db } from "../db/db";
-import type { StudyPlace } from "../models/studyPlace";
 import { getStudyPlaceById } from "./studyPlacesService";
 
 jest.mock("../db/db");
@@ -10,7 +9,7 @@ describe("studyPlacesService check-info", () => {
   });
 
   it("fetches study place from DB by id", async () => {
-    const place: StudyPlace = {
+    const place = {
       id: 3,
       name: "Library",
       address: "Kaunas",
