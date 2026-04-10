@@ -1,12 +1,6 @@
 import type { Request, Response } from "express";
-<<<<<<< HEAD
-import { createStudyPlace } from "../services/studyPlacesService";
-import { getAllStudyPlaces } from "../services/studyPlacesService";
-import { getFilteredStudyPlaces } from "../services/studyPlacesService";
-=======
-import { createStudyPlace, getStudyPlaces, getStudyPlaceById } from "../services/studyPlacesService";
+import { createStudyPlace, getStudyPlaces, getStudyPlaceById, getStudyPlacesFiltered } from "../services/studyPlacesService";
 import { PUBLIC_STUDY_PLACE_ERROR, validatePublicStudyPlace } from "../services/osmValidationService";
->>>>>>> origin/dev
 
 export const create = async (req: Request, res: Response) => {
   const {
@@ -58,15 +52,9 @@ export const create = async (req: Request, res: Response) => {
   }
 };
 
-<<<<<<< HEAD
-export const getAll = async (req: Request, res: Response) => {
-  try {
-    const places = await getAllStudyPlaces();
-=======
 export const getAll = async (_req: Request, res: Response) => {
   try {
     const places = await getStudyPlaces();
->>>>>>> origin/dev
     return res.status(200).json(places);
   } catch (error) {
     console.error("Error fetching study places", error);
@@ -74,18 +62,6 @@ export const getAll = async (_req: Request, res: Response) => {
   }
 };
 
-<<<<<<< HEAD
-export const getFiltered = async (req: Request, res: Response) => {
-  try {
-    const places = await getFilteredStudyPlaces(req.query);
-    return res.status(200).json(places);
-  } catch (error) {
-    console.error("Error fetching filtered study places", error);
-    return res.status(500).json({ error: "Failed to fetch filtered study places." });
-  }
-  
-};
-=======
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
   const placeId = Number(id);
@@ -107,4 +83,28 @@ export const getById = async (req: Request, res: Response) => {
   }
 };
 
->>>>>>> origin/dev
+export const getFiltered= async (req: Request, res: Response) => {
+  const {
+    wifiSpeed,
+    noiseLevel,
+    powerAvailability,
+    placeType,
+    workingHours
+  } = req.query;
+
+  try {
+    const places = await getStudyPlacesFiltered({
+      wifiSpeed: wifiSpeed as string,
+      noiseLevel: noiseLevel as string,
+      powerAvailability: powerAvailability as string,
+      placeType: placeType as string,
+      workingHours: workingHours as string 
+    });
+
+    return res.status(200).json(places);
+  } catch (error) {
+    console.error("Error filtering study places", error);
+    return res.status(500).json({ error: "Failed to filter study places." });
+  }
+};
+

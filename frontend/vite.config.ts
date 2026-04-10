@@ -3,9 +3,20 @@ import react from "@vitejs/plugin-react-swc";
 
 export default defineConfig({
   plugins: [react()],
+  
+  server: {
+    port: 5173,
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
+  },
+
   test: {
-    globals: true,               // leidžia naudoti describe/it/expect be importų
-    environment: "jsdom",        // būtina React komponentų testavimui
-    setupFiles: "./src/setupTests.ts", // optional: jest-dom importai
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/setupTests.ts",
   },
 });

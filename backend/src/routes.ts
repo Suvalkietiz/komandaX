@@ -6,13 +6,9 @@ const router = Router();
 
 router.post("/study-places", studyPlacesController.create);
 router.get("/study-places", studyPlacesController.getAll);
-<<<<<<< HEAD
-router.get("/study-places/filtered", studyPlacesController.getFiltered)
-
-=======
+router.get("/study-places/filtered", studyPlacesController.getFiltered);
 router.get("/study-places/:id", studyPlacesController.getById);
 router.post("/reviews", reviewController.create);
->>>>>>> origin/dev
 
 // Health check / blank starter route
 router.get("/health", (_req, res) => {
@@ -20,4 +16,3 @@ router.get("/health", (_req, res) => {
 });
 
 export default router;
-

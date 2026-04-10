@@ -2,9 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { useState } from "react";
 import { NewStudyPlace } from "./NewStudyPlace";
-<<<<<<< HEAD
 import { StudyPlacesPage } from "./StudyPlacesPage";
-=======
 import StudyPlaceDetails from "./StudyPlaceDetails";
 import SearchBar from "../components/SearchBar";
 import ResultsList from "../components/ResultsList";
@@ -12,7 +10,6 @@ import StudyPlacesMap from "../components/StudyPlacesMap";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "../services/nominatimService";
 
->>>>>>> origin/dev
 export function App() {
   // Coordinates from Nominatim or null if not searched
   const [searchQuery, setSearchQuery] = useState<{ lat: number; lon: number } | null>(null);
@@ -77,10 +74,10 @@ export function App() {
           element={
             <div className="max-w-4xl mx-auto p-4">
               <h1 className="text-2xl font-bold mb-4">Study Map</h1>
-              <SearchBar onSearch={handleSearch} />
               <div className="mt-6">
                 <StudyPlacesMap />
               </div>
+              <SearchBar onSearch={handleSearch} />
               <div className="mt-6">
                 {loading && <div className="text-center text-blue-600">Ieškoma...</div>}
                 {!loading && hasSearched ? (
@@ -90,27 +87,6 @@ export function App() {
                 )}
               </div>
             </div>
-<<<<<<< HEAD
-          </div>
-        }
-      />
-
-        <Route
-        path="/study-places"
-        element={
-          <div className="study-place">
-            <div className="app">
-              <h1>Filters</h1>
-              <StudyPlacesPage />
-            </div>
-          </div>
-        }
-      />
-
-    </Routes>
-  </BrowserRouter>
-
-=======
           }
         />
         <Route
@@ -124,10 +100,22 @@ export function App() {
             </div>
           }
         />
+
         <Route path="/study-place/:id" element={<StudyPlaceDetails />} />
+
+        <Route
+          path="/study-places"
+          element={
+            <div className="study-places-page">
+              <div className="app">
+                <h1>Study Places</h1>
+                <StudyPlacesPage />
+              </div>
+            </div>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
->>>>>>> origin/dev
   );
 }
-

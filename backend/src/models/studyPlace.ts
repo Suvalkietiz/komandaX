@@ -13,4 +13,3 @@ export interface StudyPlace {
   working_hours: string;
   created_at: string;
 }
-

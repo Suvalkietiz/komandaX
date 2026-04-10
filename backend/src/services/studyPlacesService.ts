@@ -41,42 +41,6 @@ export async function createStudyPlace(
   return result.rows[0];
 }
 
-<<<<<<< HEAD
-export async function getAllStudyPlaces(): Promise<StudyPlace[]> {
-  const result = await db.query<StudyPlace>(
-    `SELECT id, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at
-     FROM study_places
-     ORDER BY created_at DESC`
-  );
-  return result.rows;
-}
-
-export async function getFilteredStudyPlaces(filters: Partial<StudyPlace>) {
-  const conditions: string[] = [];
-  const values: any[] = [];
-
-  Object.entries(filters).forEach(([key, value], i) => {
-    if (value !== undefined && value !== "") {
-      values.push(value); 
-      conditions.push(`${key} = $${values.length}`); 
-  }
-  });
-
-  const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-
-  const result = await db.query<StudyPlace>(`
-    SELECT id, avg_rating, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at
-    FROM study_places
-    ${whereClause}
-    ORDER BY created_at DESC
-  `, values);
-
-  return result.rows;
-}
-
-
-
-=======
 type StudyPlaceRow = {
   id: number;
   name?: string | null;
@@ -156,4 +120,46 @@ export async function getStudyPlaces(): Promise<StudyPlaceListItem[]> {
   }));
 }
 
->>>>>>> origin/dev
+type FilterParams = {
+  wifiSpeed?: string;
+  noiseLevel?: string;
+  powerAvailability?: string;
+  placeType?: string;
+  workingHours?: string;
+};
+
+export const getStudyPlacesFiltered = async (filters: FilterParams) => {
+  let query = "SELECT * FROM study_places WHERE 1=1";
+  const values: any[] = [];
+  let index = 1;
+
+  if (filters.wifiSpeed) {
+    query += ` AND LOWER(wifi_speed) = LOWER($${index++})`;
+    values.push(filters.wifiSpeed);
+  }
+
+  if (filters.noiseLevel) {
+    query += ` AND LOWER(noise_level) = LOWER($${index++})`;
+    values.push(filters.noiseLevel);
+  }
+
+  if (filters.powerAvailability) {
+    query += ` AND LOWER(power_availability) = LOWER($${index++})`;
+    values.push(filters.powerAvailability);
+  }
+
+  if (filters.placeType) {
+    query += ` AND LOWER(place_type) = LOWER($${index++})`;
+    values.push(filters.placeType);
+  }
+
+  if (filters.workingHours) {
+    query += ` AND LOWER(working_hours) = LOWER($${index++})`;
+    values.push(filters.workingHours);
+  }
+
+  const result = await db.query(query, values);
+  return result.rows;
+};
+
+
