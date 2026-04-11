@@ -126,6 +126,7 @@ type FilterParams = {
   powerAvailability?: string;
   placeType?: string;
   workingHours?: string;
+  sort?: string;
 };
 
 export const getStudyPlacesFiltered = async (filters: FilterParams) => {
@@ -156,6 +157,17 @@ export const getStudyPlacesFiltered = async (filters: FilterParams) => {
   if (filters.workingHours) {
     query += ` AND LOWER(working_hours) = LOWER($${index++})`;
     values.push(filters.workingHours);
+  }
+
+   // SORT LOGIKA
+  if (filters.sort === "distance") {
+    query += " ORDER BY lat ASC"; // mock
+  } else if (filters.sort === "newest") {
+    query += " ORDER BY created_at DESC";
+  } else if (filters.sort === "rating") {
+    query += " ORDER BY id DESC"; // mock
+  } else if (filters.sort === "popularity") {
+    query += " ORDER BY id DESC"; // mock
   }
 
   const result = await db.query(query, values);

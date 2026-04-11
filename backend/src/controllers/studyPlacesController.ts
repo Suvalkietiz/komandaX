@@ -89,7 +89,8 @@ export const getFiltered= async (req: Request, res: Response) => {
     noiseLevel,
     powerAvailability,
     placeType,
-    workingHours
+    workingHours,
+    sort
   } = req.query;
 
   try {
@@ -98,7 +99,8 @@ export const getFiltered= async (req: Request, res: Response) => {
       noiseLevel: noiseLevel as string,
       powerAvailability: powerAvailability as string,
       placeType: placeType as string,
-      workingHours: workingHours as string 
+      workingHours: workingHours as string,
+      sort: sort as string
     });
 
     return res.status(200).json(places);

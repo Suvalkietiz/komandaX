@@ -3,12 +3,21 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import { NewStudyPlace } from "./NewStudyPlace";
 import { StudyPlacesPage } from "./StudyPlacesPage";
+import { FiltersPanel } from "../components/FiltersPanel";
 import StudyPlaceDetails from "./StudyPlaceDetails";
 import SearchBar from "../components/SearchBar";
 import ResultsList from "../components/ResultsList";
 import StudyPlacesMap from "../components/StudyPlacesMap";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "../services/nominatimService";
+
+type FiltersState = {
+  wifi_speed: string;
+  noise_level: string;
+  place_type: string;
+  power_availability: string;
+  working_hours: string;
+};
 
 export function App() {
   // Coordinates from Nominatim or null if not searched
@@ -20,7 +29,60 @@ export function App() {
   // Track if a search has been performed
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Fetch coordinates from Nominatim, fetch results, filter/sort by 2km radius
+  const [filters, setFilters] = useState<FiltersState>({
+    wifi_speed: "",
+    noise_level: "",
+    place_type: "",
+    power_availability: "",
+    working_hours: "",
+  });
+
+  const [sort, setSort] = useState("newest");
+
+  const buildFilterParams = (userLat: number, userLon: number, filters: FiltersState, sort: string) => {
+    const params = new URLSearchParams({
+      lat: userLat.toString(),
+      lon: userLon.toString(),
+      sort,
+    });
+
+    if (filters.wifi_speed) params.append("wifiSpeed", filters.wifi_speed);
+    if (filters.noise_level) params.append("noiseLevel", filters.noise_level);
+    if (filters.place_type) params.append("placeType", filters.place_type);
+    if (filters.power_availability) params.append("powerAvailability", filters.power_availability);
+    if (filters.working_hours) params.append("workingHours", filters.working_hours);
+
+    return params.toString();
+  };
+
+  const fetchPlaces = async (
+    userLat: number,
+    userLon: number,
+    filtersToUse: FiltersState,
+    sortOrder: string
+  ) => {
+    const params = buildFilterParams(userLat, userLon, filtersToUse, sortOrder);
+    const backendRes = await fetch(`/api/study-places/filtered?${params}`);
+
+    if (!backendRes.ok) {
+      throw new Error("Failed to fetch study places");
+    }
+
+    const places = await backendRes.json();
+
+    return places
+      .map((place: any) => {
+        const distance = calculateDistance(userLat, userLon, place.lat, place.lon);
+        return {
+          ...place,
+          distance,
+          distanceFormatted: `${distance.toFixed(1)} km`,
+        };
+      })
+      .filter((place: any) => place.distance <= 2)
+      .sort((a: any, b: any) => a.distance - b.distance);
+  };
+
   const handleSearch = async (address: string) => {
     setLoading(true);
     setHasSearched(true);
@@ -35,32 +97,46 @@ export function App() {
       const { lat: userLat, lon: userLon } = coordinates;
       setSearchQuery({ lat: userLat, lon: userLon });
 
-      // 2. Fetch study places from backend (replace URL as needed)
-      const backendRes = await fetch(`/api/study-places?lat=${userLat}&lon=${userLon}`);
-      let places = await backendRes.json();
-
-      // 3. Filter and sort by 2km radius using Haversine
-      places = places
-        .map((place: any) => {
-          const distance = calculateDistance(
-            userLat,
-            userLon,
-            place.lat,
-            place.lon
-          );
-          return {
-            ...place,
-            distance,
-            distanceFormatted: `${distance.toFixed(1)} km`,
-          };
-        })
-        .filter((place: any) => place.distance <= 2)
-        .sort((a: any, b: any) => a.distance - b.distance);
-
+      const places = await fetchPlaces(userLat, userLon, filters, sort);
       setResults(places);
     } catch (err) {
+      console.error(err);
       setResults([]);
       setSearchQuery(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = async (newFilters: FiltersState) => {
+    setFilters(newFilters);
+
+    if (!searchQuery) return;
+
+    setLoading(true);
+    try {
+      const places = await fetchPlaces(searchQuery.lat, searchQuery.lon, newFilters, sort);
+      setResults(places);
+    } catch (err) {
+      console.error(err);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSortChange = async (newSort: string) => {
+    setSort(newSort);
+
+    if (!searchQuery) return;
+
+    setLoading(true);
+    try {
+      const places = await fetchPlaces(searchQuery.lat, searchQuery.lon, filters, newSort);
+      setResults(places);
+    } catch (err) {
+      console.error(err);
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -77,7 +153,24 @@ export function App() {
               <div className="mt-6">
                 <StudyPlacesMap />
               </div>
-              <SearchBar onSearch={handleSearch} />
+              <div className="flex flex-col gap-4 mt-6">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div>
+                    <label className="block mb-1">Sort by:</label>
+                    <select
+                      value={sort}
+                      onChange={(e) => handleSortChange(e.target.value)}
+                      className="border rounded px-3 py-2"
+                    >
+                      <option value="newest">Newest</option>
+                      <option value="rating">Rating</option>
+                      <option value="distance">Distance</option>
+                    </select>
+                  </div>
+                  <SearchBar onSearch={handleSearch} />
+                </div>
+                <FiltersPanel filters={filters} onChange={handleFilterChange} />
+              </div>
               <div className="mt-6">
                 {loading && <div className="text-center text-blue-600">Ieškoma...</div>}
                 {!loading && hasSearched ? (
