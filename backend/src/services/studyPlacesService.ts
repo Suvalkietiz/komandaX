@@ -126,8 +126,49 @@ type FilterParams = {
   powerAvailability?: string;
   placeType?: string;
   workingHours?: string;
-  sort?: string;
 };
+
+const parseWorkingHoursRange = (workingHours: string) => {
+  if (!workingHours) return null;
+
+  const [startStr, endStr] = workingHours.split("-");
+
+  const startHour = Number(startStr.split(":")[0]);
+  const endHour = Number(endStr.split(":")[0]);
+
+  if (Number.isNaN(startHour) || Number.isNaN(endHour)) {
+    return null;
+  }
+
+  return {
+    start: startHour,
+    end: endHour,
+  };
+};
+
+const workingHoursCategoryMatches = (workingHours: string, category: string) => {
+  const range = parseWorkingHoursRange(workingHours);
+  if (!range) {
+    return false;
+  }
+
+  if (category === "morning") {
+    return range.start < 12 && range.end > 6;
+  }
+
+  if (category === "afternoon") {
+    return range.start < 18 && range.end > 12;
+  }
+
+  if (category === "evening") {
+    return range.start < 24 && range.end > 18;
+  }
+
+  return false;
+};
+
+const isWorkingHoursCategory = (value: string) =>
+  value === "morning" || value === "afternoon" || value === "evening";
 
 export const getStudyPlacesFiltered = async (filters: FilterParams) => {
   let query = "SELECT * FROM study_places WHERE 1=1";
@@ -154,24 +195,21 @@ export const getStudyPlacesFiltered = async (filters: FilterParams) => {
     values.push(filters.placeType);
   }
 
-  if (filters.workingHours) {
+  if (filters.workingHours && !isWorkingHoursCategory(filters.workingHours)) {
     query += ` AND LOWER(working_hours) = LOWER($${index++})`;
     values.push(filters.workingHours);
   }
 
-   // SORT LOGIKA
-  if (filters.sort === "distance") {
-    query += " ORDER BY lat ASC"; // mock
-  } else if (filters.sort === "newest") {
-    query += " ORDER BY created_at DESC";
-  } else if (filters.sort === "rating") {
-    query += " ORDER BY id DESC"; // mock
-  } else if (filters.sort === "popularity") {
-    query += " ORDER BY id DESC"; // mock
+  const result = await db.query(query, values);
+  const rows = result.rows;
+
+  if (filters.workingHours && isWorkingHoursCategory(filters.workingHours)) {
+    return rows.filter((row) =>
+      workingHoursCategoryMatches(row.working_hours ?? "", filters.workingHours!)
+    );
   }
 
-  const result = await db.query(query, values);
-  return result.rows;
+  return rows;
 };
 
 

@@ -37,13 +37,10 @@ export function App() {
     working_hours: "",
   });
 
-  const [sort, setSort] = useState("newest");
-
-  const buildFilterParams = (userLat: number, userLon: number, filters: FiltersState, sort: string) => {
+  const buildFilterParams = (userLat: number, userLon: number, filters: FiltersState) => {
     const params = new URLSearchParams({
       lat: userLat.toString(),
       lon: userLon.toString(),
-      sort,
     });
 
     if (filters.wifi_speed) params.append("wifiSpeed", filters.wifi_speed);
@@ -58,10 +55,9 @@ export function App() {
   const fetchPlaces = async (
     userLat: number,
     userLon: number,
-    filtersToUse: FiltersState,
-    sortOrder: string
+    filtersToUse: FiltersState
   ) => {
-    const params = buildFilterParams(userLat, userLon, filtersToUse, sortOrder);
+    const params = buildFilterParams(userLat, userLon, filtersToUse);
     const backendRes = await fetch(`/api/study-places/filtered?${params}`);
 
     if (!backendRes.ok) {
@@ -97,7 +93,7 @@ export function App() {
       const { lat: userLat, lon: userLon } = coordinates;
       setSearchQuery({ lat: userLat, lon: userLon });
 
-      const places = await fetchPlaces(userLat, userLon, filters, sort);
+      const places = await fetchPlaces(userLat, userLon, filters);
       setResults(places);
     } catch (err) {
       console.error(err);
@@ -115,24 +111,7 @@ export function App() {
 
     setLoading(true);
     try {
-      const places = await fetchPlaces(searchQuery.lat, searchQuery.lon, newFilters, sort);
-      setResults(places);
-    } catch (err) {
-      console.error(err);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSortChange = async (newSort: string) => {
-    setSort(newSort);
-
-    if (!searchQuery) return;
-
-    setLoading(true);
-    try {
-      const places = await fetchPlaces(searchQuery.lat, searchQuery.lon, filters, newSort);
+      const places = await fetchPlaces(searchQuery.lat, searchQuery.lon, newFilters);
       setResults(places);
     } catch (err) {
       console.error(err);
@@ -155,18 +134,6 @@ export function App() {
               </div>
               <div className="flex flex-col gap-4 mt-6">
                 <div className="flex flex-wrap items-center gap-4">
-                  <div>
-                    <label className="block mb-1">Sort by:</label>
-                    <select
-                      value={sort}
-                      onChange={(e) => handleSortChange(e.target.value)}
-                      className="border rounded px-3 py-2"
-                    >
-                      <option value="newest">Newest</option>
-                      <option value="rating">Rating</option>
-                      <option value="distance">Distance</option>
-                    </select>
-                  </div>
                   <SearchBar onSearch={handleSearch} />
                 </div>
                 <FiltersPanel filters={filters} onChange={handleFilterChange} />
