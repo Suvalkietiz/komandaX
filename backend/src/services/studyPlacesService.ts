@@ -172,7 +172,7 @@ const isWorkingHoursCategory = (value: string) =>
 
 export const getStudyPlacesFiltered = async (filters: FilterParams) => {
   let query = "SELECT * FROM study_places WHERE 1=1";
-  const values: any[] = [];
+  const values: unknown[] = [];
   let index = 1;
 
   if (filters.wifiSpeed) {
@@ -200,7 +200,7 @@ export const getStudyPlacesFiltered = async (filters: FilterParams) => {
     values.push(filters.workingHours);
   }
 
-  const result = await db.query(query, values);
+  const result = await db.query<{ working_hours?: string | null }>(query, values);
   const rows = result.rows;
 
   if (filters.workingHours && isWorkingHoursCategory(filters.workingHours)) {

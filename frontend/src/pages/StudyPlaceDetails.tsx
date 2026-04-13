@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getStudyPlaceById } from "../services/studyPlacesService";
 import ReviewForm from "../components/ReviewForm";
 
@@ -21,6 +21,7 @@ type StudyPlaceDetailsResponse = {
 
 export default function StudyPlaceDetails() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const [place, setPlace] = useState<StudyPlaceDetailsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,6 +48,20 @@ export default function StudyPlaceDetails() {
 
     loadPlace();
   }, [id]);
+
+  useEffect(() => {
+    if (location.hash !== "#review") {
+      return;
+    }
+
+    // Wait for content render before attempting to scroll to the review section.
+    requestAnimationFrame(() => {
+      const reviewEl = document.getElementById("review");
+      if (reviewEl) {
+        reviewEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }, [location.hash, place]);
 
   if (loading) {
     return (
@@ -197,7 +212,9 @@ export default function StudyPlaceDetails() {
           </div>
         </>
       )}
-      <ReviewForm studyPlaceId={Number(id)} />
+      <div id="review" className="mt-6">
+        <ReviewForm studyPlaceId={Number(id)} />
+      </div>
     </div>
   );
 }

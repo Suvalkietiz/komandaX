@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as studyPlacesController from "./controllers/studyPlacesController";
 import * as reviewController from "./controllers/reviewController";
+import * as savedPlacesController from "./controllers/savedPlacesController";
 
 const router = Router();
 
@@ -9,6 +10,9 @@ router.get("/study-places", studyPlacesController.getAll);
 router.get("/study-places/filtered", studyPlacesController.getFiltered);
 router.get("/study-places/:id", studyPlacesController.getById);
 router.post("/reviews", reviewController.create);
+router.post("/saved-places", savedPlacesController.savePlace);
+router.get("/saved-places", savedPlacesController.getSavedPlaces);
+router.delete("/saved-places/:studyPlaceId", savedPlacesController.removeSavedPlace);
 
 // Health check / blank starter route
 router.get("/health", (_req, res) => {

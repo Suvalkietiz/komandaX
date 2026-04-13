@@ -9,5 +9,5 @@ const pg_1 = __importDefault(require("pg"));
 dotenv_1.default.config();
 const { Pool } = pg_1.default;
 exports.db = new Pool({
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL,
 });
