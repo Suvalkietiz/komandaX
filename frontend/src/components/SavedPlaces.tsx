@@ -74,7 +74,6 @@ const SavedPlaces: React.FC = () => {
           saved.place ? (
             <div key={saved.id} className="flex flex-col gap-2">
               <StudySpaceCard
-                id={saved.place.id}
                 name={saved.place.name}
                 address={saved.place.address}
                 wifi_speed={saved.place.wifi_speed ?? 'Nežinoma'}

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import ReviewForm from "./ReviewForm";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
@@ -23,7 +22,6 @@ export default function StudyPlacesMap() {
   const [selectedPlace, setSelectedPlace] = useState<StudyPlace | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [currentStatus, setCurrentStatus] = useState("");
-  const [showReview, setShowReview] = useState(false);
 
   const places: StudyPlace[] = [
     {
@@ -87,9 +85,6 @@ export default function StudyPlacesMap() {
                   <button type="button" onClick={() => openDetails(place)}>
                     Informacija
                   </button>
-                  <button type="button" onClick={() => { setSelectedPlace(place); setShowReview(true); }}>
-                    Palikti atsiliepimą
-                  </button>
                 </div>
               </div>
             </Popup>
@@ -136,27 +131,6 @@ export default function StudyPlacesMap() {
         </div>
       )}
 
-      {showReview && selectedPlace && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div style={{ background: "#fff", borderRadius: 12, padding: 24, minWidth: 350, maxWidth: 500 }}>
-            <button style={{ float: "right" }} onClick={() => setShowReview(false)}>X</button>
-            <ReviewForm studyPlaceId={selectedPlace.id} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

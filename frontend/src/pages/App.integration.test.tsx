@@ -5,11 +5,11 @@ import userEvent from '@testing-library/user-event';
 import { App } from './App';
 
 describe('App integration: search flow', () => {
-  const originalFetch = global.fetch;
+  const originalFetch = globalThis.fetch;
 
   afterEach(() => {
     jest.clearAllMocks();
-    global.fetch = originalFetch;
+    globalThis.fetch = originalFetch;
   });
 
   it('shows only places within 2km and sorts from nearest to farthest', async () => {
@@ -53,7 +53,7 @@ describe('App integration: search flow', () => {
         ],
       });
 
-    global.fetch = fetchMock as unknown as typeof fetch;
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     render(<App />);
     const user = userEvent.setup();
@@ -92,7 +92,7 @@ describe('App integration: search flow', () => {
         ],
       });
 
-    global.fetch = fetchMock as unknown as typeof fetch;
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     render(<App />);
     const user = userEvent.setup();
