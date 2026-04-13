@@ -8,6 +8,16 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const pg_1 = __importDefault(require("pg"));
 dotenv_1.default.config();
 const { Pool } = pg_1.default;
+const hasConnectionString = Boolean(process.env.DATABASE_URL);
+const connectionOptions = hasConnectionString
+    ? { connectionString: process.env.DATABASE_URL }
+    : {
+        user: process.env.DB_USER,
+        host: process.env.DB_HOST,
+        database: process.env.DB_NAME,
+        password: process.env.DB_PASSWORD ?? "",
+        port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
+    };
 exports.db = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    ...connectionOptions,
 });

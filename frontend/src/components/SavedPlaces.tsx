@@ -72,19 +72,30 @@ const SavedPlaces: React.FC = () => {
     <div className="max-w-4xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Išsaugotos vietos</h1>
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-        {savedPlaces.map((saved) => (
-          saved.place ? (
+        {savedPlaces.map((saved) => {
+          const place = saved.place ?? {
+            id: saved.studyPlaceId,
+            name: `Išsaugota vieta #${saved.studyPlaceId}`,
+            address: 'Adresas nenurodytas',
+            wifi_speed: 'Nežinoma',
+            noise_level: 'Nežinomas',
+            has_outlets: false,
+          };
+
+          return (
             <div key={saved.id} className="flex flex-col gap-2">
               <StudySpaceCard
-                id={saved.place.id}
-                name={saved.place.name}
-                address={saved.place.address}
-                wifi_speed={saved.place.wifi_speed ?? 'Nežinoma'}
-                noise_level={saved.place.noise_level ?? 'Nežinomas'}
+                id={place.id}
+                name={place.name}
+                address={place.address}
+                wifi_speed={place.wifi_speed ?? 'Nežinoma'}
+                noise_level={place.noise_level ?? 'Nežinomas'}
                 has_outlets={
-                  typeof saved.place.has_outlets === 'boolean'
-                    ? saved.place.has_outlets
-                    : saved.place.power_availability === 'yes'
+                  typeof place.has_outlets === 'boolean'
+                    ? place.has_outlets
+                    : ['yes', 'yra', 'sufficient', 'true'].includes(
+                        (place.power_availability ?? '').toLowerCase()
+                      )
                 }
                 distance_km={0} // Not relevant for saved places
               />
@@ -103,12 +114,8 @@ const SavedPlaces: React.FC = () => {
                 Pašalinti iš išsaugotų
               </button>
             </div>
-          ) : (
-            <div key={saved.id} className="text-center text-gray-500">
-              Vieta #{saved.studyPlaceId} nerasta
-            </div>
-          )
-        ))}
+          );
+        })}
       </div>
 
       {reviewPlaceId !== null && (

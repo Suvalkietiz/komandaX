@@ -15,6 +15,20 @@ export type SavedPlaceRecord = {
   place?: SavedPlaceSnapshot;
 };
 
+async function getErrorMessage(response: Response, fallback: string): Promise<string> {
+  const raw = await response.text();
+  if (!raw) {
+    return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as { error?: string };
+    return parsed.error || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function savePlace(studyPlaceId: number | string, place?: SavedPlaceSnapshot): Promise<void> {
   const response = await fetch('/api/saved-places', {
     method: 'POST',
@@ -25,8 +39,7 @@ export async function savePlace(studyPlaceId: number | string, place?: SavedPlac
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to save place');
+    throw new Error(await getErrorMessage(response, 'Failed to save place'));
   }
 }
 
@@ -34,8 +47,7 @@ export async function getSavedPlaces(): Promise<SavedPlaceRecord[]> {
   const response = await fetch('/api/saved-places');
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch saved places');
+    throw new Error(await getErrorMessage(response, 'Failed to fetch saved places'));
   }
 
   const data = await response.json();
@@ -48,8 +60,7 @@ export async function removeSavedPlace(studyPlaceId: number | string): Promise<v
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to remove saved place');
+    throw new Error(await getErrorMessage(response, 'Failed to remove saved place'));
   }
 }
 
