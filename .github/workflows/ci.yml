@@ -3,26 +3,19 @@ name: CI Pipeline
 "on":
   push:
     branches:
-      - main
       - master
-      - dev
       - saved-places
-      - feature/**
   pull_request:
     branches:
-      - main
       - master
-      - dev
+      - saved-places
+  workflow_dispatch:
 
 jobs:
   frontend:
     name: Frontend Build and Test
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: frontend
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,24 +24,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
-        run: npm run build
+        run: npm run build --workspace frontend
 
       - name: Run frontend tests
-        run: npm test || echo "No tests"
+        run: npm test --workspace frontend
 
   backend:
     name: Backend Build and Test
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: backend
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,12 +47,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build backend
-        run: npm run build
+        run: npm run build --workspace backend
 
       - name: Run backend tests
-        run: npm test || echo "No tests"
+        run: npm test --workspace backend
