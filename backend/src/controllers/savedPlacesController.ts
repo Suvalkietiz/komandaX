@@ -84,17 +84,7 @@ export const getSavedPlaces = async (_req: Request, res: Response) => {
       return res.status(401).json({ error: "Only registered users can view saved places." });
     }
 
-    const result = await pool.query<{
-      id: number;
-      userId: number;
-      studyPlaceId: number;
-      placeId: number | null;
-      placeName: string | null;
-      placeAddress: string | null;
-      placeWifiSpeed: string | null;
-      placeNoiseLevel: string | null;
-      placePowerAvailability: string | null;
-    }>(
+    const result = await pool.query(
       `SELECT
          s.id,
          s.user_id AS "userId",
@@ -106,39 +96,34 @@ export const getSavedPlaces = async (_req: Request, res: Response) => {
          sp.noise_level AS "placeNoiseLevel",
          sp.power_availability AS "placePowerAvailability"
        FROM saved_places s
-       LEFT JOIN study_places sp ON sp.id = s.study_place_id
+       LEFT JOIN study_places sp ON s.study_place_id = sp.id
        WHERE s.user_id = $1
-       ORDER BY s.created_at DESC`,
+       ORDER BY s.id DESC`,
       [userId]
     );
 
-    const data = result.rows.map((row) => {
-      const fromDb = row.placeId !== null;
-      const snapshot = snapshotStore.get(row.studyPlaceId);
-
-      const powerAvailability =
-        (fromDb ? row.placePowerAvailability : undefined) ?? snapshot?.power_availability;
-
-      const hasOutlets =
-        fromDb && row.placePowerAvailability
-          ? row.placePowerAvailability.toLowerCase().includes("yes") ||
-            row.placePowerAvailability.toLowerCase().includes("yra") ||
-            row.placePowerAvailability.toLowerCase().includes("sufficient")
-          : snapshot?.has_outlets;
-
-      const place = {
-        id: row.studyPlaceId,
-        name:
-          (fromDb ? row.placeName : snapshot?.name) ||
-          `Išsaugota vieta #${row.studyPlaceId}`,
-        address:
-          (fromDb ? row.placeAddress : snapshot?.address) ||
-          "Adresas nenurodytas",
-        wifi_speed: (fromDb ? row.placeWifiSpeed : undefined) ?? snapshot?.wifi_speed,
-        noise_level: (fromDb ? row.placeNoiseLevel : undefined) ?? snapshot?.noise_level,
-        power_availability: powerAvailability,
-        has_outlets: hasOutlets,
-      };
+    const response = (result.rows as Array<{
+      id: number;
+      userId: number;
+      studyPlaceId: number;
+      placeId: number | null;
+      placeName: string | null;
+      placeAddress: string | null;
+      placeWifiSpeed: string | null;
+      placeNoiseLevel: string | null;
+      placePowerAvailability: string | null;
+    }>).map((row) => {
+      const place =
+        row.placeName && row.placeAddress
+          ? {
+              id: row.placeId,
+              name: row.placeName,
+              address: row.placeAddress,
+              wifi_speed: row.placeWifiSpeed,
+              noise_level: row.placeNoiseLevel,
+              power_availability: row.placePowerAvailability,
+            }
+          : snapshotStore.get(Number(row.studyPlaceId));
 
       return {
         id: row.id,
@@ -148,35 +133,30 @@ export const getSavedPlaces = async (_req: Request, res: Response) => {
       };
     });
 
-    return res.status(200).json({
-      message: "Saved places fetched successfully.",
-      data,
-    });
+    return res.status(200).json(response);
   } catch (error) {
     console.error("getSavedPlaces error:", error);
     return res.status(500).json({ error: "Internal server error." });
   }
 };
 
-// Pašalinti vietą
+// Panaikinti išsaugotą vietą
 export const removeSavedPlace = async (req: Request, res: Response) => {
   try {
     const userId = getCurrentUserId();
-    const studyPlaceId = Number(req.params.studyPlaceId);
+    const { savedPlaceId } = req.params;
 
     if (!userId) {
       return res.status(401).json({ error: "Only registered users can remove saved places." });
     }
 
-    if (!studyPlaceId) {
-      return res.status(400).json({ error: "studyPlaceId is required." });
+    if (!savedPlaceId) {
+      return res.status(400).json({ error: "savedPlaceId is required." });
     }
 
     const result = await pool.query(
-      `DELETE FROM saved_places
-       WHERE user_id = $1 AND study_place_id = $2
-       RETURNING *`,
-      [userId, studyPlaceId]
+      `DELETE FROM saved_places WHERE id = $1 AND user_id = $2 RETURNING *`,
+      [Number(savedPlaceId), userId]
     );
 
     if (result.rows.length === 0) {
@@ -184,7 +164,7 @@ export const removeSavedPlace = async (req: Request, res: Response) => {
     }
 
     return res.status(200).json({
-      message: "Saved place removed successfully.",
+      message: "Place removed successfully.",
       data: result.rows[0],
     });
   } catch (error) {
