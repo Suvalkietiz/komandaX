@@ -1,5 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+/** @jest-environment jsdom */
+
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { FiltersPanel } from "./FiltersPanel";
 
 describe("FiltersPanel", () => {
@@ -13,6 +15,7 @@ describe("FiltersPanel", () => {
 
   it("renders all select inputs", () => {
     render(<FiltersPanel filters={mockFilters} onChange={() => {}} />);
+
     expect(screen.getByLabelText(/WiFi/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Noise/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Power/i)).toBeInTheDocument();
@@ -20,11 +23,16 @@ describe("FiltersPanel", () => {
     expect(screen.getByLabelText(/Working hours/i)).toBeInTheDocument();
   });
 
-  it("calls onChange when a filter changes", () => {
-    const onChangeMock = vi.fn();
-    render(<FiltersPanel filters={mockFilters} onChange={onChangeMock} />);
-    
-    fireEvent.change(screen.getByLabelText(/WiFi/i), { target: { value: "fast" } });
+  it("calls onChange when WiFi filter changes", async () => {
+    const onChangeMock = jest.fn();
+
+    render(
+      <FiltersPanel filters={mockFilters} onChange={onChangeMock} />
+    );
+
+    const user = userEvent.setup();
+    await user.selectOptions(screen.getByLabelText(/WiFi/i), "fast");
+
     expect(onChangeMock).toHaveBeenCalledWith({
       ...mockFilters,
       wifi_speed: "fast",
