@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getStudyPlaceById } from "../services/studyPlacesService";
-import ReviewForm from "../components/ReviewForm";
 
 type StudyPlaceDetailsResponse = {
   id: number;
@@ -19,10 +18,25 @@ type StudyPlaceDetailsResponse = {
   created_at: string;
 };
 
+function valueOrUnknown(value?: string | null) {
+  return value && value.trim().length > 0 ? value : "Nenurodyta";
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "Nenurodyta"
+    : date.toLocaleDateString("lt-LT", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+}
+
 export default function StudyPlaceDetails() {
   const { id } = useParams<{ id: string }>();
-  const location = useLocation();
   const navigate = useNavigate();
+
   const [place, setPlace] = useState<StudyPlaceDetailsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +50,12 @@ export default function StudyPlaceDetails() {
 
     async function loadPlace() {
       try {
+        setLoading(true);
+        setError(null);
         const data = await getStudyPlaceById(id!);
         setPlace(data);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Nepavyko įkelti vietos informacijos.";
-        setError(message);
+      } catch {
+        setError("Nepavyko įkelti vietos informacijos.");
       } finally {
         setLoading(false);
       }
@@ -49,172 +64,106 @@ export default function StudyPlaceDetails() {
     loadPlace();
   }, [id]);
 
-  useEffect(() => {
-    if (location.hash !== "#review") {
-      return;
-    }
-
-    // Wait for content render before attempting to scroll to the review section.
-    requestAnimationFrame(() => {
-      const reviewEl = document.getElementById("review");
-      if (reviewEl) {
-        reviewEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    });
-  }, [location.hash, place]);
-
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-4">
-        <div className="text-center text-blue-600">Kraunama vietos informacija...</div>
-      </div>
+      <main className="place-details-page">
+        <section className="place-details-card">
+          <p className="place-loading">Kraunama vietos informacija...</p>
+        </section>
+      </main>
     );
   }
 
-  if (error) {
+  if (error || !place) {
     return (
-      <div className="max-w-4xl mx-auto p-4">
-        <button
-          type="button"
-          className="text-blue-600 underline mb-4"
-          onClick={() => navigate(-1)}
-        >
-          Grįžti atgal
-        </button>
-        <div className="text-red-600 mb-4">{error}</div>
-        <div className="bg-white rounded-xl shadow p-6 mb-8">
-          <p className="text-sm text-gray-500 mb-4">
-            Bandymas užkrauti duomenis iš duomenų bazės: <code>/api/study-places/{id}</code>
-          </p>
-          <p className="font-semibold mb-4">Sistemos logika įvykdyta — puslapis buvo atidarytas, bet duomenų bazėje gali nebūti atitinkamo įrašo.</p>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-lg border p-4 bg-gray-50">
-              <h2 className="font-semibold mb-2">Vieta</h2>
-              <p>Study place #{id}</p>
-            </div>
-            <div className="rounded-lg border p-4 bg-gray-50">
-              <h2 className="font-semibold mb-2">Adresas</h2>
-              <p>Nenurodytas</p>
-            </div>
-            <div className="rounded-lg border p-4 bg-gray-50">
-              <h2 className="font-semibold mb-2">Wi-Fi</h2>
-              <p>Nežinoma</p>
-            </div>
-            <div className="rounded-lg border p-4 bg-gray-50">
-              <h2 className="font-semibold mb-2">Triukšmo lygis</h2>
-              <p>Nežinomas</p>
-            </div>
-          </div>
+      <main className="place-details-page">
+        <div className="place-details-container">
+          <button className="place-back-button" onClick={() => navigate(-1)}>
+            ← Grįžti atgal
+          </button>
+
+          <section className="place-details-card">
+            <h1>Vietos informacija nerasta</h1>
+            <p className="place-error">{error}</p>
+          </section>
         </div>
-      </div>
-    );
-  }
-
-  if (!place) {
-    return (
-      <div className="max-w-4xl mx-auto p-4">
-        <button
-          type="button"
-          className="text-blue-600 underline mb-4"
-          onClick={() => navigate(-1)}
-        >
-          Grįžti atgal
-        </button>
-        <div className="text-gray-600">Vietos informacija nerasta.</div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <button
-        type="button"
-        className="text-blue-600 underline mb-4"
-        onClick={() => navigate(-1)}
-      >
-        Grįžti atgal
-      </button>
-      {error && (
-        <>
-          <div className="text-red-600 mb-4">{error}</div>
-          <div className="bg-white rounded-xl shadow p-6 mb-8">
-            <p className="text-sm text-gray-500 mb-4">
-              Bandymas užkrauti duomenis iš duomenų bazės: <code>/api/study-places/{id}</code>
-            </p>
-            <p className="font-semibold mb-4">Sistemos logika įvykdyta — puslapis buvo atidarytas, bet duomenų bazėje gali nebūti atitinkamo įrašo.</p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Vieta</h2>
-                <p>Study place #{id}</p>
-              </div>
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Adresas</h2>
-                <p>Nenurodytas</p>
-              </div>
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Wi-Fi</h2>
-                <p>Nežinoma</p>
-              </div>
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Triukšmo lygis</h2>
-                <p>Nežinomas</p>
-              </div>
+    <main className="place-details-page">
+      <div className="place-details-container">
+        <button className="place-back-button" onClick={() => navigate(-1)}>
+          ← Grįžti atgal
+        </button>
+
+        <section className="place-hero">
+          <div>
+            <p className="place-type">{valueOrUnknown(place.place_type)}</p>
+            <h1>{place.name}</h1>
+            <p className="place-address">{place.address}</p>
+          </div>
+
+          <span className={place.verified ? "place-badge verified" : "place-badge"}>
+            {place.verified ? "Patikrinta vieta" : "Nepatikrinta vieta"}
+          </span>
+        </section>
+
+        <section className="place-info-grid">
+          <article className="place-info-card">
+            <span>🕒</span>
+            <h2>Darbo laikas</h2>
+            <p>{valueOrUnknown(place.working_hours)}</p>
+          </article>
+
+          <article className="place-info-card">
+            <span>📶</span>
+            <h2>Wi-Fi</h2>
+            <p>{valueOrUnknown(place.wifi_speed)}</p>
+          </article>
+
+          <article className="place-info-card">
+            <span>🔇</span>
+            <h2>Triukšmo lygis</h2>
+            <p>{valueOrUnknown(place.noise_level)}</p>
+          </article>
+
+          <article className="place-info-card">
+            <span>🔌</span>
+            <h2>Elektros lizdai</h2>
+            <p>{valueOrUnknown(place.power_availability)}</p>
+          </article>
+        </section>
+
+        <section className="place-details-card">
+          <h2>Papildoma informacija</h2>
+
+          <div className="place-details-list">
+            <div>
+              <span>Adresas</span>
+              <strong>{valueOrUnknown(place.address)}</strong>
+            </div>
+
+            <div>
+              <span>Vietos tipas</span>
+              <strong>{valueOrUnknown(place.place_type)}</strong>
+            </div>
+
+            <div>
+              <span>Koordinatės</span>
+              <strong>
+                {place.lat}, {place.lon}
+              </strong>
+            </div>
+
+            <div>
+              <span>Pridėta</span>
+              <strong>{formatDate(place.created_at)}</strong>
             </div>
           </div>
-        </>
-      )}
-      {place && (
-        <>
-          <div className="bg-white rounded-xl shadow p-6">
-            <div className="mb-6 overflow-hidden rounded-lg">
-              <img
-                src={`https://via.placeholder.com/1200x450?text=${encodeURIComponent(place.name)}`}
-                alt={place.name}
-                className="w-full h-64 object-cover"
-              />
-            </div>
-            <h1 className="text-3xl font-bold mb-2">{place.name}</h1>
-            <p className="text-sm text-gray-500 mb-6">{place.address}</p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Vieta</h2>
-                <p>{place.place_type}</p>
-              </div>
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Darbo laikas</h2>
-                <p>{place.working_hours}</p>
-              </div>
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Wi-Fi</h2>
-                <p>{place.wifi_speed}</p>
-              </div>
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Triukšmo lygis</h2>
-                <p>{place.noise_level}</p>
-              </div>
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Elektros lizdai</h2>
-                <p>{place.power_availability}</p>
-              </div>
-              <div className="rounded-lg border p-4 bg-gray-50">
-                <h2 className="font-semibold mb-2">Patikrinta</h2>
-                <p>{place.verified ? "Taip" : "Ne"}</p>
-              </div>
-            </div>
-            <div className="mt-6 rounded-lg border p-4 bg-gray-50">
-              <h2 className="font-semibold mb-2">Išsami informacija</h2>
-              <p>OSM ID: {place.osm_id}</p>
-              <p>Longitude / Latitude: {place.lon}, {place.lat}</p>
-              <p>Patvirtinimas: {place.verified ? "Taip" : "Ne"}</p>
-              <p>Kurta: {new Date(place.created_at).toLocaleString("lt-LT")}</p>
-              <p className="text-xs text-gray-500 mt-3">Duomenys užkrauti iš duomenų bazės.</p>
-            </div>
-          </div>
-        </>
-      )}
-      <div id="review" className="mt-6">
-        <ReviewForm studyPlaceId={Number(id)} />
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
