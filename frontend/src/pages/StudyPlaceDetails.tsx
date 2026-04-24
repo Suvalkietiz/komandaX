@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import ReviewForm from "../components/ReviewForm";
+import { getReviewsByStudyPlaceId, Review } from "../services/reviewService";
 import { getStudyPlaceById } from "../services/studyPlacesService";
 
 type StudyPlaceDetailsResponse = {
@@ -33,27 +35,47 @@ function formatDate(value: string) {
       });
 }
 
+function renderStars(rating: number) {
+  const rounded = Math.round(rating);
+  return "★".repeat(rounded) + "☆".repeat(5 - rounded);
+}
+
 export default function StudyPlaceDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [place, setPlace] = useState<StudyPlaceDetailsResponse | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+
+  const studyPlaceId = Number(id);
+
+  const averageRating = useMemo(() => {
+    if (reviews.length === 0) {
+      return null;
+    }
+
+    const sum = reviews.reduce((total, review) => total + review.rating, 0);
+    return sum / reviews.length;
+  }, [reviews]);
 
   useEffect(() => {
-    if (!id) {
+    if (!id || Number.isNaN(studyPlaceId)) {
       setError("Vietos identifikatorius nerastas.");
       setLoading(false);
       return;
     }
 
-    async function loadPlace() {
+    async function loadData() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getStudyPlaceById(id!);
-        setPlace(data);
+
+        const placeData = await getStudyPlaceById(id!);
+        setPlace(placeData);
       } catch {
         setError("Nepavyko įkelti vietos informacijos.");
       } finally {
@@ -61,8 +83,34 @@ export default function StudyPlaceDetails() {
       }
     }
 
-    loadPlace();
-  }, [id]);
+    loadData();
+  }, [id, studyPlaceId]);
+
+  useEffect(() => {
+    if (!studyPlaceId || Number.isNaN(studyPlaceId)) {
+      return;
+    }
+
+    async function loadReviews() {
+      try {
+        setReviewsLoading(true);
+        setReviewsError(null);
+
+        const data = await getReviewsByStudyPlaceId(studyPlaceId);
+        setReviews(data);
+      } catch {
+        setReviewsError("Nepavyko įkelti atsiliepimų.");
+      } finally {
+        setReviewsLoading(false);
+      }
+    }
+
+    loadReviews();
+  }, [studyPlaceId]);
+
+  const handleReviewCreated = (review: Review) => {
+    setReviews((currentReviews) => [review, ...currentReviews]);
+  };
 
   if (loading) {
     return (
@@ -105,9 +153,25 @@ export default function StudyPlaceDetails() {
             <p className="place-address">{place.address}</p>
           </div>
 
-          <span className={place.verified ? "place-badge verified" : "place-badge"}>
-            {place.verified ? "Patikrinta vieta" : "Nepatikrinta vieta"}
-          </span>
+          <div className="place-hero-side">
+            <span className={place.verified ? "place-badge verified" : "place-badge"}>
+              {place.verified ? "Patikrinta vieta" : "Nepatikrinta vieta"}
+            </span>
+
+            <div className="place-rating-summary">
+              <span className="place-rating-number">
+                {averageRating ? averageRating.toFixed(1) : "—"}
+              </span>
+              <span className="place-rating-stars">
+                {averageRating ? renderStars(averageRating) : "☆☆☆☆☆"}
+              </span>
+              <span className="place-rating-count">
+                {reviews.length === 1
+                  ? "1 atsiliepimas"
+                  : `${reviews.length} atsiliepimai`}
+              </span>
+            </div>
+          </div>
         </section>
 
         <section className="place-info-grid">
@@ -162,6 +226,55 @@ export default function StudyPlaceDetails() {
               <strong>{formatDate(place.created_at)}</strong>
             </div>
           </div>
+        </section>
+
+        <section className="reviews-layout">
+          <div className="reviews-list-card">
+            <div className="reviews-header">
+              <div>
+                <h2>Atsiliepimai</h2>
+                <p>Vartotojų įvertinimai ir komentarai apie šią vietą.</p>
+              </div>
+
+              <div className="reviews-average-box">
+                <strong>{averageRating ? averageRating.toFixed(1) : "—"}</strong>
+                <span>{averageRating ? renderStars(averageRating) : "☆☆☆☆☆"}</span>
+              </div>
+            </div>
+
+            {reviewsLoading && <p className="review-muted">Kraunami atsiliepimai...</p>}
+            {reviewsError && <p className="review-error">{reviewsError}</p>}
+
+            {!reviewsLoading && !reviewsError && reviews.length === 0 && (
+              <div className="empty-reviews">
+                <strong>Atsiliepimų dar nėra</strong>
+                <p>Būkite pirmas, palikęs atsiliepimą apie šią vietą.</p>
+              </div>
+            )}
+
+            {!reviewsLoading && reviews.length > 0 && (
+              <div className="reviews-list">
+                {reviews.map((review) => (
+                  <article key={review.id} className="review-card">
+                    <div className="review-card-header">
+                      <div>
+                        <h3>{review.nickname}</h3>
+                        <span>{formatDate(review.created_at)}</span>
+                      </div>
+
+                      <div className="review-stars">
+                        {renderStars(review.rating)}
+                      </div>
+                    </div>
+
+                    <p>{review.text}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <ReviewForm studyPlaceId={place.id} onReviewCreated={handleReviewCreated} />
         </section>
       </div>
     </main>
