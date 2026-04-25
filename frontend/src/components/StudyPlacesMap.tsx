@@ -1,7 +1,7 @@
 import { useState } from "react";
-import ReviewForm from "./ReviewForm";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import ReviewForm from "./ReviewForm";
 import L from "leaflet";
 import type { LatLngExpression } from "leaflet";
 
@@ -22,8 +22,8 @@ const markerIcon = L.icon({
 export default function StudyPlacesMap() {
   const [selectedPlace, setSelectedPlace] = useState<StudyPlace | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState("");
   const [showReview, setShowReview] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState("");
 
   const places: StudyPlace[] = [
     {
@@ -58,6 +58,11 @@ export default function StudyPlacesMap() {
     navigate(`/study-place/${place.id}`);
   };
 
+  const openReview = (place: StudyPlace) => {
+    setSelectedPlace(place);
+    setShowReview(true);
+  };
+
   return (
     <div>
       <MapContainer
@@ -87,8 +92,8 @@ export default function StudyPlacesMap() {
                   <button type="button" onClick={() => openDetails(place)}>
                     Informacija
                   </button>
-                  <button type="button" onClick={() => { setSelectedPlace(place); setShowReview(true); }}>
-                    Palikti atsiliepimą
+                  <button type="button" onClick={() => openReview(place)}>
+                    Įvertinti vietą
                   </button>
                 </div>
               </div>
@@ -152,11 +157,12 @@ export default function StudyPlacesMap() {
           }}
         >
           <div style={{ background: "#fff", borderRadius: 12, padding: 24, minWidth: 350, maxWidth: 500 }}>
-            <button style={{ float: "right" }} onClick={() => setShowReview(false)}>X</button>
+            <button type="button" style={{ float: "right" }} onClick={() => setShowReview(false)}>X</button>
             <ReviewForm studyPlaceId={selectedPlace.id} />
           </div>
         </div>
       )}
+
     </div>
   );
 }

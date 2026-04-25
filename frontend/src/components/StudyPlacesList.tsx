@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 type Place = {
   id: number;
   avg_rating: number;
@@ -12,6 +14,8 @@ type Place = {
 type Props = { places: Place[] };
 
 export function StudyPlacesList({ places }: Props) {
+  const navigate = useNavigate();
+
   return (
     <div>
       {places.map((p) => (
@@ -23,6 +27,13 @@ export function StudyPlacesList({ places }: Props) {
           <p>Power availability: {p.power_availability}</p>
           <p>Working hours: {p.working_hours}</p>
           <p>Created: {p.created_at}</p>
+          <button
+            type="button"
+            onClick={() => navigate(`/study-place/${p.id}`)}
+            className="mt-2 rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+          >
+            Peržiūrėti ir įvertinti
+          </button>
         </div>
       ))}
     </div>

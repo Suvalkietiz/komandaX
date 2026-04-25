@@ -13,11 +13,9 @@ app.use(express.json());
 app.use("/api", routes);
 
 app.get("/", (_req, res) => {
-  res.json({ message: "Backend is running. Start building your API in backend/src." });
+  res.json({ message: "Backend is running." });
 });
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`Server running on http://localhost:${PORT}`);
 });
-

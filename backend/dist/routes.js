@@ -35,9 +35,17 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const studyPlacesController = __importStar(require("./controllers/studyPlacesController"));
+const reviewController = __importStar(require("./controllers/reviewController"));
+const savedPlacesController = __importStar(require("./controllers/savedPlacesController"));
 const router = (0, express_1.Router)();
 router.post("/study-places", studyPlacesController.create);
 router.get("/study-places", studyPlacesController.getAll);
+router.get("/study-places/filtered", studyPlacesController.getFiltered);
+router.get("/study-places/:id", studyPlacesController.getById);
+router.post("/reviews", reviewController.create);
+router.post("/saved-places", savedPlacesController.savePlace);
+router.get("/saved-places", savedPlacesController.getSavedPlaces);
+router.delete("/saved-places/:studyPlaceId", savedPlacesController.removeSavedPlace);
 // Health check / blank starter route
 router.get("/health", (_req, res) => {
     res.json({ status: "ok" });
