@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NewStudyPlace } from "./NewStudyPlace";
 import { StudyPlacesPage } from "./StudyPlacesPage";
 import { FiltersPanel } from "../components/FiltersPanel";
@@ -11,6 +10,7 @@ import StudyPlacesMap from "../components/StudyPlacesMap";
 import SavedPlaces from "../components/SavedPlaces";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "../services/nominatimService";
+import { SearchControls } from "../components/SearchControls";
 
 type FiltersState = {
   wifi_speed: string;
@@ -18,6 +18,7 @@ type FiltersState = {
   place_type: string;
   power_availability: string;
   working_hours: string;
+  sort?: "distance" | "newest";
 };
 
 export function App() {
@@ -30,12 +31,15 @@ export function App() {
   // Track if a search has been performed
   const [hasSearched, setHasSearched] = useState(false);
 
+  const [mode, setMode] = useState<"nearby" | "all">("nearby");
+
   const [filters, setFilters] = useState<FiltersState>({
     wifi_speed: "",
     noise_level: "",
     place_type: "",
     power_availability: "",
     working_hours: "",
+    sort: "distance",
   });
 
   const buildFilterParams = (userLat: number, userLon: number, filters: FiltersState) => {
@@ -54,30 +58,58 @@ export function App() {
   };
 
   const fetchPlaces = async (
-    userLat: number,
-    userLon: number,
-    filtersToUse: FiltersState
+   userLat: number,
+   userLon: number,
+   filtersToUse: FiltersState,
+   mode: "nearby" | "all"
   ) => {
-    const params = buildFilterParams(userLat, userLon, filtersToUse);
-    const backendRes = await fetch(`/api/study-places/filtered?${params}`);
+  const params = buildFilterParams(userLat, userLon, filtersToUse);
 
-    if (!backendRes.ok) {
-      throw new Error("Failed to fetch study places");
+  const backendRes = await fetch(`/api/study-places/filtered?${params}`);
+
+  if (!backendRes.ok) {
+    throw new Error("Failed to fetch study places");
+  }
+
+  const places = await backendRes.json();
+
+  // 1. pridedam distance visiems
+  const enriched = places.map((place: any) => {
+    const distance = calculateDistance(
+      userLat,
+      userLon,
+      place.lat,
+      place.lon
+    );
+
+    return {
+      ...place,
+      distance,
+      distanceFormatted: `${distance.toFixed(1)} km`,
+    };
+  });
+
+  // 2. 2km filtras 
+  const filtered =
+    mode === "nearby"
+      ? enriched.filter((place: any) => place.distance <= 2)
+      : enriched;
+
+  // 3. sorting 
+  return filtered.sort((a: any, b: any) => {
+    if (filtersToUse.sort === "distance") {
+      return a.distance - b.distance;
     }
 
-    const places = await backendRes.json();
+    if (filtersToUse.sort === "newest") {
+      return (
+        new Date(b.created_at).getTime() -
+        new Date(a.created_at).getTime()
+      );
+    }
 
-    return places
-      .map((place: any) => {
-        const distance = calculateDistance(userLat, userLon, place.lat, place.lon);
-        return {
-          ...place,
-          distance,
-          distanceFormatted: `${distance.toFixed(1)} km`,
-        };
-      })
-      .filter((place: any) => place.distance <= 2)
-      .sort((a: any, b: any) => a.distance - b.distance);
+     return 0;
+   });
   };
 
   const handleSearch = async (address: string) => {
@@ -94,7 +126,7 @@ export function App() {
       const { lat: userLat, lon: userLon } = coordinates;
       setSearchQuery({ lat: userLat, lon: userLon });
 
-      const places = await fetchPlaces(userLat, userLon, filters);
+      const places = await fetchPlaces(userLat, userLon, filters, mode);
       setResults(places);
     } catch (err) {
       console.error(err);
@@ -112,7 +144,31 @@ export function App() {
 
     setLoading(true);
     try {
-      const places = await fetchPlaces(searchQuery.lat, searchQuery.lon, newFilters);
+      const places = await fetchPlaces(searchQuery.lat, searchQuery.lon, newFilters, mode);
+      setResults(places);
+    } catch (err) {
+      console.error(err);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModeChange = async (newMode: "nearby" | "all") => {
+    setMode(newMode);
+
+    if (!searchQuery) return;
+
+    setLoading(true);
+
+    try {
+      const places = await fetchPlaces(
+      searchQuery.lat,
+      searchQuery.lon,
+      filters,
+      newMode
+    );
+
       setResults(places);
     } catch (err) {
       console.error(err);
@@ -136,15 +192,21 @@ export function App() {
                 <Link className="rounded border px-3 py-1 hover:bg-gray-50" to="/new-study-place">Nauja vieta</Link>
               </nav>
               <h1 className="text-2xl font-bold mb-4">Study Map</h1>
-              <div className="mt-6">
-                <StudyPlacesMap />
-              </div>
-              <div className="flex flex-col gap-4 mt-6">
-                <div className="flex flex-wrap items-center gap-4">
-                  <SearchBar onSearch={handleSearch} />
-                </div>
+
+              <StudyPlacesMap />
+
+              <SearchControls
+                mode={mode}
+                setMode={handleModeChange}
+                sort={filters.sort ?? "distance"}
+                onSortChange={(sort) =>
+                  handleFilterChange({ ...filters, sort })
+                }
+                onSearch={handleSearch}
+                showControls={hasSearched}
+              />
                 <FiltersPanel filters={filters} onChange={handleFilterChange} />
-              </div>
+              
               <div className="mt-6">
                 {loading && <div className="text-center text-blue-600">Ieškoma...</div>}
                 {!loading && hasSearched ? (

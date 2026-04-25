@@ -127,6 +127,9 @@ type FilterParams = {
   placeType?: string;
   workingHours?: string;
   sort?: string;
+
+  lat?: number;
+  lon?: number;
 };
 
 const parseWorkingHoursRange = (workingHours: string) => {
@@ -208,9 +211,7 @@ export const getStudyPlacesFiltered = async (filters: FilterParams) => {
     query += " ORDER BY created_at DESC";
   } else if (filters.sort === "rating") {
     query += " ORDER BY id DESC"; // mock
-  } else if (filters.sort === "popularity") {
-    query += " ORDER BY id DESC"; // mock
-  }
+  } 
 
   const result = await db.query(query, values);
   const rows = result.rows;
@@ -220,6 +221,6 @@ export const getStudyPlacesFiltered = async (filters: FilterParams) => {
       workingHoursCategoryMatches(row.working_hours ?? "", filters.workingHours!)
     );
   }
-  
+  return rows;
 };
 
