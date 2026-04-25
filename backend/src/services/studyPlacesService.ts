@@ -107,7 +107,7 @@ export async function getStudyPlaces(): Promise<StudyPlaceListItem[]> {
      ORDER BY created_at DESC`
   );
 
-  return result.rows.map((row) => ({
+  return result.rows.map((row: StudyPlaceRow) => ({
     id: String(row.id),
     name: row.name ?? row.place_type ?? `Study place #${row.id}`,
     address: row.address ?? "Adresas nenurodytas",
@@ -172,7 +172,7 @@ const isWorkingHoursCategory = (value: string) =>
 
 export const getStudyPlacesFiltered = async (filters: FilterParams) => {
   let query = "SELECT * FROM study_places WHERE 1=1";
-  const values: any[] = [];
+  const values: unknown[] = [];
   let index = 1;
 
   if (filters.wifiSpeed) {
@@ -200,11 +200,11 @@ export const getStudyPlacesFiltered = async (filters: FilterParams) => {
     values.push(filters.workingHours);
   }
 
-  const result = await db.query(query, values);
+  const result = await db.query<{ working_hours?: string | null }>(query, values);
   const rows = result.rows;
 
   if (filters.workingHours && isWorkingHoursCategory(filters.workingHours)) {
-    return rows.filter((row) =>
+    return rows.filter((row: { working_hours?: string | null }) =>
       workingHoursCategoryMatches(row.working_hours ?? "", filters.workingHours!)
     );
   }

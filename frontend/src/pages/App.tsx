@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
 import { useState } from "react";
 import { NewStudyPlace } from "./NewStudyPlace";
@@ -8,6 +8,7 @@ import StudyPlaceDetails from "./StudyPlaceDetails";
 import SearchBar from "../components/SearchBar";
 import ResultsList from "../components/ResultsList";
 import StudyPlacesMap from "../components/StudyPlacesMap";
+import SavedPlaces from "../components/SavedPlaces";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "../services/nominatimService";
 import { workingHoursCategoryMatches } from "../utils/workingHours";
@@ -134,6 +135,12 @@ export function App() {
           path="/"
           element={
             <div className="max-w-4xl mx-auto p-4">
+              <nav className="mb-4 flex flex-wrap gap-2 text-sm">
+                <Link className="rounded border px-3 py-1 hover:bg-gray-50" to="/">Pradžia</Link>
+                <Link className="rounded border px-3 py-1 hover:bg-gray-50" to="/study-places">Visos vietos</Link>
+                <Link className="rounded border px-3 py-1 hover:bg-gray-50" to="/saved-places">Išsaugotos vietos</Link>
+                <Link className="rounded border px-3 py-1 hover:bg-gray-50" to="/new-study-place">Nauja vieta</Link>
+              </nav>
               <h1 className="text-2xl font-bold mb-4">Study Map</h1>
               <div className="mt-6">
                 <StudyPlacesMap />
@@ -168,6 +175,8 @@ export function App() {
         />
 
         <Route path="/study-place/:id" element={<StudyPlaceDetails />} />
+
+        <Route path="/saved-places" element={<SavedPlaces />} />
 
         <Route
           path="/study-places"

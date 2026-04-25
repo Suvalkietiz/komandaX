@@ -40,7 +40,7 @@ const StudySpaceCard: React.FC<StudySpaceCardProps> = ({
       <button
         type="button"
         onClick={() => navigate(`/study-place/${id}`)}
-        className="mt-3 rounded bg-blue-600 text-white px-3 py-2 text-sm hover:bg-blue-700"
+        className="mt-3 rounded bg-blue-600 text-white px-3 py-2 text-sm hover:bg-blue-700 study-card-info-button"
       >
         Informacija
       </button>

@@ -2,6 +2,7 @@
 
 import { render, screen, waitFor } from "@testing-library/react";
 import { StudyPlacesPage } from "./StudyPlacesPage";
+import { MemoryRouter } from "react-router-dom";
 
 const mockFetch = jest.fn();
 
@@ -35,7 +36,11 @@ describe("StudyPlacesPage", () => {
       ],
     });
 
-    render(<StudyPlacesPage />);
+    render(
+    <MemoryRouter>
+      <StudyPlacesPage />
+    </MemoryRouter>
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/library/i)).toBeInTheDocument();

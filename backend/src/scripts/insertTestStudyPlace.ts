@@ -59,7 +59,7 @@ async function insertTestStudyPlace() {
       54.6872,
       25.2797,
       true,
-      "Medium",
+      "Fast",
       "Medium", 
       "Sufficient",
       "cafe",
@@ -83,7 +83,7 @@ async function insertTestStudyPlace() {
       25.2682,
       true,
       "Slow",
-      "Loud", 
+      "High", 
       "Insufficient",
       "other",
       "09:00-18:00"

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { createReview, CreateReviewInput } from "../services/reviewService";
+import { createReview, CreateReviewInput, Review } from "../services/reviewService";
 
 interface ReviewFormProps {
   studyPlaceId: number;
+  onReviewCreated?: (review: Review) => void;
 }
 
-export default function ReviewForm({ studyPlaceId }: ReviewFormProps) {
+export default function ReviewForm({ studyPlaceId, onReviewCreated }: ReviewFormProps) {
   const [nickname, setNickname] = useState("");
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
@@ -15,9 +16,11 @@ export default function ReviewForm({ studyPlaceId }: ReviewFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
     setLoading(true);
     setError(null);
     setSuccess(false);
+
     try {
       const input: CreateReviewInput = {
         study_place_id: studyPlaceId,
@@ -25,15 +28,15 @@ export default function ReviewForm({ studyPlaceId }: ReviewFormProps) {
         rating,
         text,
       };
-      await createReview(input);
+
+      const createdReview = await createReview(input);
+
       setSuccess(true);
       setNickname("");
       setRating(5);
       setText("");
-      // Pranešimas naršyklėje
-      if (window && window.alert) {
-        window.alert("Atsiliepimas sėkmingai paliktas!");
-      }
+
+      onReviewCreated?.(createdReview);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nepavyko išsaugoti atsiliepimo.");
     } finally {
@@ -42,53 +45,61 @@ export default function ReviewForm({ studyPlaceId }: ReviewFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 p-4 border rounded bg-gray-50 max-w-xl mx-auto">
-      <h2 className="font-semibold mb-2">Palikite atsiliepimą</h2>
-      <div className="mb-2">
-        <label className="block mb-1 font-medium">Slapyvardis</label>
+    <form onSubmit={handleSubmit} className="review-form">
+      <div className="review-form-header">
+        <h2>Palikite atsiliepimą</h2>
+        <p>Pasidalinkite savo patirtimi apie šią mokymosi vietą.</p>
+      </div>
+
+      <div className="review-field">
+        <label htmlFor="nickname">Slapyvardis</label>
         <input
+          id="nickname"
           type="text"
           value={nickname}
-          onChange={e => setNickname(e.target.value)}
+          onChange={(e) => setNickname(e.target.value)}
           required
           minLength={2}
           maxLength={32}
-          className="border rounded px-2 py-1 w-full"
+          placeholder="Pvz. Studentas123"
         />
       </div>
-      <div className="mb-2">
-        <label className="block mb-1 font-medium">Įvertinimas</label>
+
+      <div className="review-field">
+        <label htmlFor="rating">Įvertinimas</label>
         <select
+          id="rating"
           value={rating}
-          onChange={e => setRating(Number(e.target.value))}
+          onChange={(e) => setRating(Number(e.target.value))}
           required
-          className="border rounded px-2 py-1 w-full"
         >
-          {[5,4,3,2,1].map(val => (
-            <option key={val} value={val}>{val} ⭐</option>
+          {[5, 4, 3, 2, 1].map((val) => (
+            <option key={val} value={val}>
+              {val} ⭐
+            </option>
           ))}
         </select>
       </div>
-      <div className="mb-2">
-        <label className="block mb-1 font-medium">Atsiliepimas</label>
+
+      <div className="review-field">
+        <label htmlFor="text">Atsiliepimas</label>
         <textarea
+          id="text"
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(e) => setText(e.target.value)}
           required
           minLength={2}
           maxLength={500}
-          className="border rounded px-2 py-1 w-full"
+          placeholder="Parašykite, kas patiko arba ką būtų galima pagerinti..."
         />
       </div>
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        disabled={loading}
-      >
+
+      <button type="submit" className="review-submit-button" disabled={loading}>
         {loading ? "Siunčiama..." : "Pateikti atsiliepimą"}
       </button>
-      {success && <div className="text-green-600 mt-2">Atsiliepimas išsaugotas!</div>}
-      {error && <div className="text-red-600 mt-2">{error}</div>}
+
+      {success && <p className="review-success">Atsiliepimas išsaugotas.</p>}
+      {error && <p className="review-error">{error}</p>}
     </form>
   );
 }
