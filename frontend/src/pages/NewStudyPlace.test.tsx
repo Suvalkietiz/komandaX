@@ -1,16 +1,18 @@
+/** @jest-environment jsdom */
+
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi } from "vitest";
+//import { vi } from "vitest"; vi >>>> jest
 import { NewStudyPlace } from "./NewStudyPlace";
 import { createStudyPlace } from "../services/studyPlacesService";
 
-vi.mock("../services/studyPlacesService", () => ({
-  createStudyPlace: vi.fn(),
+jest.mock("../services/studyPlacesService", () => ({
+  createStudyPlace: jest.fn(),
 }));
 
 describe("NewStudyPlace", () => {
   it("shows the validation error returned by the backend", async () => {
-    vi.mocked(createStudyPlace).mockRejectedValueOnce(
+    jest.mocked(createStudyPlace).mockRejectedValueOnce(
       new Error("Ši vieta nėra atpažįstama kaip vieša studijų erdvė")
     );
 

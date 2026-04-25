@@ -11,6 +11,7 @@ import StudyPlacesMap from "../components/StudyPlacesMap";
 import SavedPlaces from "../components/SavedPlaces";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "../services/nominatimService";
+import { workingHoursCategoryMatches } from "../utils/workingHours";
 
 type FiltersState = {
   wifi_speed: string;
@@ -61,9 +62,9 @@ export function App() {
     const params = buildFilterParams(userLat, userLon, filtersToUse);
     const backendRes = await fetch(`/api/study-places/filtered?${params}`);
 
-    if (!backendRes.ok) {
+    if (backendRes.ok === false) {  // vietoj !backendRes.ok
       throw new Error("Failed to fetch study places");
-    }
+    } 
 
     const places = await backendRes.json();
 
@@ -77,6 +78,11 @@ export function App() {
         };
       })
       .filter((place: any) => place.distance <= 2)
+      .filter((place: any) => !filtersToUse.wifi_speed || place.wifi_speed === filtersToUse.wifi_speed)
+      .filter((place: any) => !filtersToUse.noise_level || place.noise_level === filtersToUse.noise_level)
+      .filter((place: any) => !filtersToUse.place_type || place.place_type === filtersToUse.place_type)
+      .filter((place: any) => !filtersToUse.power_availability || place.power_availability === filtersToUse.power_availability)
+      .filter((place: any) => !filtersToUse.working_hours || workingHoursCategoryMatches(place.working_hours ?? "", filtersToUse.working_hours))
       .sort((a: any, b: any) => a.distance - b.distance);
   };
 
