@@ -1,6 +1,10 @@
 import '@testing-library/jest-dom';
 import { TextDecoder, TextEncoder } from 'util';
 
+beforeAll(() => {
+  jest.spyOn(console, "warn").mockImplementation(() => {}); //warningai ignoruojami švaresnis testų output
+});
+
 if (!global.TextEncoder) {
 	global.TextEncoder = TextEncoder as typeof global.TextEncoder;
 }

@@ -28,6 +28,7 @@
     "eslint": "^9.8.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.10",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^30.3.0",
     "jsdom": "^29.0.1",
     "ts-jest": "^29.4.9",

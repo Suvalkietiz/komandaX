@@ -13,4 +13,8 @@ module.exports = {
     '/node_modules/(?!(react-leaflet|@react-leaflet|leaflet)/)',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+
+   moduleNameMapper: {
+  "\\.(css|less|scss)$": "identity-obj-proxy",
+  }
 };
