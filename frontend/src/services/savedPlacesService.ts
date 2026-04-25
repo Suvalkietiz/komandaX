@@ -29,17 +29,33 @@ async function getErrorMessage(response: Response, fallback: string): Promise<st
   }
 }
 
-export async function savePlace(studyPlaceId: number | string, place?: SavedPlaceSnapshot): Promise<void> {
-  const response = await fetch('/api/saved-places', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ studyPlaceId, place }),
-  });
+function toNetworkErrorMessage(err: unknown, fallback: string): Error {
+  if (err instanceof Error && err.message.toLowerCase().includes('failed to fetch')) {
+    return new Error('Backend API nepasiekiamas. Patikrink, ar paleistas backend serveris (localhost:3000).');
+  }
 
-  if (!response.ok) {
-    throw new Error(await getErrorMessage(response, 'Failed to save place'));
+  if (err instanceof Error) {
+    return err;
+  }
+
+  return new Error(fallback);
+}
+
+export async function savePlace(studyPlaceId: number | string, place?: SavedPlaceSnapshot): Promise<void> {
+  try {
+    const response = await fetch('/api/saved-places', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ studyPlaceId, place }),
+    });
+
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to save place'));
+    }
+  } catch (err) {
+    throw toNetworkErrorMessage(err, 'Failed to save place');
   }
 }
 
@@ -51,11 +67,15 @@ export async function getSavedPlaces(): Promise<SavedPlaceRecord[]> {
   }
 
   const data = await response.json();
-  return data.data || [];
+  if (Array.isArray(data)) {
+    return data as SavedPlaceRecord[];
+  }
+
+  return (data?.data as SavedPlaceRecord[]) || [];
 }
 
-export async function removeSavedPlace(studyPlaceId: number | string): Promise<void> {
-  const response = await fetch(`/api/saved-places/${studyPlaceId}`, {
+export async function removeSavedPlace(savedPlaceId: number | string): Promise<void> {
+  const response = await fetch(`/api/saved-places/${savedPlaceId}`, {
     method: 'DELETE',
   });
 

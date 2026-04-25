@@ -41,10 +41,10 @@ const SavedPlaces: React.FC = () => {
     }
   };
 
-  const handleRemove = async (studyPlaceId: number) => {
+  const handleRemove = async (savedPlaceId: number) => {
     try {
-      await removeSavedPlace(studyPlaceId);
-      setSavedPlaces(prev => prev.filter(p => p.studyPlaceId !== studyPlaceId));
+      await removeSavedPlace(savedPlaceId);
+      setSavedPlaces(prev => prev.filter(p => p.id !== savedPlaceId));
       alert('Vieta pašalinta iš išsaugotų');
     } catch (err) {
       console.error(err);
@@ -53,25 +53,29 @@ const SavedPlaces: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center mt-8">Kraunama...</div>;
+    return <div className="saved-status-box">Kraunama išsaugotos vietos...</div>;
   }
 
   if (error) {
-    return <div className="text-center text-red-500 mt-8">{error}</div>;
+    return <div className="saved-status-box saved-status-error">{error}</div>;
   }
 
   if (!savedPlaces.length) {
     return (
-      <div className="text-center text-gray-500 mt-8">
+      <div className="saved-status-box saved-status-empty">
         Jūs neturite išsaugotų vietų.
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Išsaugotos vietos</h1>
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+    <main className="saved-page">
+      <section className="saved-header">
+        <h1>Išsaugotos vietos</h1>
+        <p>Greita prieiga prie tavo mėgstamų mokymosi vietų.</p>
+      </section>
+
+      <section className="saved-grid">
         {savedPlaces.map((saved) => {
           const place = saved.place ?? {
             id: saved.studyPlaceId,
@@ -83,7 +87,7 @@ const SavedPlaces: React.FC = () => {
           };
 
           return (
-            <div key={saved.id} className="flex flex-col gap-2">
+            <article key={saved.id} className="saved-item">
               <StudySpaceCard
                 id={place.id}
                 name={place.name}
@@ -99,47 +103,36 @@ const SavedPlaces: React.FC = () => {
                 }
                 distance_km={0} // Not relevant for saved places
               />
-              <button
-                type="button"
-                onClick={() => setReviewPlaceId(saved.studyPlaceId)}
-                className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Įvertinti vietą
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRemove(saved.studyPlaceId)}
-                className="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-              >
-                Pašalinti iš išsaugotų
-              </button>
-            </div>
+              <div className="saved-actions">
+                <button
+                  type="button"
+                  onClick={() => setReviewPlaceId(saved.studyPlaceId)}
+                  className="saved-action-button"
+                >
+                  Įvertinti vietą
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRemove(saved.id)}
+                  className="saved-action-button saved-action-danger"
+                >
+                  Pašalinti iš išsaugotų
+                </button>
+              </div>
+            </article>
           );
         })}
-      </div>
+      </section>
 
       {reviewPlaceId !== null && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <div style={{ background: '#fff', borderRadius: 12, padding: 24, minWidth: 350, maxWidth: 500 }}>
-            <button type="button" style={{ float: 'right' }} onClick={() => setReviewPlaceId(null)}>X</button>
+        <div className="saved-modal-overlay">
+          <div className="saved-modal-card">
+            <button type="button" className="saved-modal-close" onClick={() => setReviewPlaceId(null)}>Uzdaryti</button>
             <ReviewForm studyPlaceId={reviewPlaceId} />
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 };
 
