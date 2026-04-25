@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "test": "echo \"No backend tests configured\"",
-    "start": "node dist/server.js"
+    "test": "jest",
+    "start": "node dist/server.js",
+    "seed:test-study-places": "npm run build && node dist/scripts/insertTestStudyPlace.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

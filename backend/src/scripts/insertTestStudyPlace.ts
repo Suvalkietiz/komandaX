@@ -1,12 +1,7 @@
 import { db } from "../db/db";
 
 async function insertTestStudyPlace() {
-  const result = await db.query(
-    `INSERT INTO study_places
-      (name, address, osm_id, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at)
-    VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
-    RETURNING id`,
+  const seedPlaces = [
     [
       "Testinė biblioteka",
       "Testo g. 1, Vilnius",
@@ -15,20 +10,11 @@ async function insertTestStudyPlace() {
       25.2797,
       true,
       "Greitas",
-      "Tylu", 
+      "Tylu",
       "Yra",
       "library",
-      "08:00-20:00"
-    ]
-  );
-  console.log("Test study place inserted with id:", result.rows[0].id);
-
-  const result2 = await db.query(
-    `INSERT INTO study_places
-      (name, address, osm_id, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at)
-    VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
-    RETURNING id`,
+      "08:00-20:00",
+    ],
     [
       "VILNIUS TECH biblioteka",
       "Saulėtekio al. 11, Vilnius",
@@ -37,21 +23,11 @@ async function insertTestStudyPlace() {
       25.3376,
       true,
       "Fast",
-      "Low", 
+      "Low",
       "Sufficient",
       "library",
-      "00:00-24:00"
-    ]
-  );
-
-  console.log("Test study place inserted with id:", result2.rows[0].id);
-
-  const result3 = await db.query(
-    `INSERT INTO study_places
-      (name, address, osm_id, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at)
-    VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
-    RETURNING id`,
+      "00:00-24:00",
+    ],
     [
       "Study Cafe",
       "Gedimino pr. 13, Vilnius",
@@ -60,21 +36,11 @@ async function insertTestStudyPlace() {
       25.2797,
       true,
       "Fast",
-      "Medium", 
+      "Medium",
       "Sufficient",
       "cafe",
-      "08:00-22:00"
-    ]
-  );
-
-  console.log("Test study place inserted with id:", result3.rows[0].id);
-
-  const result4 = await db.query(
-    `INSERT INTO study_places
-      (name, address, osm_id, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at)
-    VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
-    RETURNING id`,
+      "08:00-22:00",
+    ],
     [
       "Miesto skaitykla",
       "Gedimino pr. 43, Vilnius",
@@ -83,14 +49,38 @@ async function insertTestStudyPlace() {
       25.2682,
       true,
       "Slow",
-      "High", 
+      "High",
       "Insufficient",
       "other",
-      "09:00-18:00"
-    ]
-  );
+      "09:00-18:00",
+    ],
+  ] as const;
 
-  console.log("Test study place inserted with id:", result4.rows[0].id);
+  for (const place of seedPlaces) {
+    const result = await db.query(
+      `INSERT INTO study_places
+        (name, address, osm_id, lat, lon, verified, wifi_speed, noise_level, power_availability, place_type, working_hours, created_at)
+      VALUES
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+      ON CONFLICT (osm_id)
+      DO UPDATE SET
+        name = EXCLUDED.name,
+        address = EXCLUDED.address,
+        lat = EXCLUDED.lat,
+        lon = EXCLUDED.lon,
+        verified = EXCLUDED.verified,
+        wifi_speed = EXCLUDED.wifi_speed,
+        noise_level = EXCLUDED.noise_level,
+        power_availability = EXCLUDED.power_availability,
+        place_type = EXCLUDED.place_type,
+        working_hours = EXCLUDED.working_hours
+      RETURNING id`,
+      [...place]
+    );
+
+    console.log("Test study place upserted with id:", result.rows[0].id);
+  }
+
   await db.end();
 }
 

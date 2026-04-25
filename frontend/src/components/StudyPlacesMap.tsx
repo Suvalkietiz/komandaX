@@ -8,6 +8,9 @@ import { mapPlacesData } from "../data/mapPlacesData";
 import L from "leaflet";
 import type { LatLngExpression } from "leaflet";
 
+const STATUS_STORAGE_KEY = "komandax.mapPlaceStatuses";
+const STATUS_OPTIONS = ["Atidaryta", "Vidutinis užimtumas", "Pilna", "Uždaryta"];
+
 type StudyPlace = {
   id: number;
   name: string;
@@ -49,6 +52,33 @@ export default function StudyPlacesMap() {
   const [mapError, setMapError] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState("");
 
+  const readStoredStatuses = () => {
+    try {
+      const raw = window.localStorage.getItem(STATUS_STORAGE_KEY);
+      if (!raw) {
+        return {} as Record<string, string>;
+      }
+
+      const parsed = JSON.parse(raw) as Record<string, string>;
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {} as Record<string, string>;
+    }
+  };
+
+  const writeStoredStatuses = (nextStatuses: Record<string, string>) => {
+    window.localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify(nextStatuses));
+  };
+
+  const applyStoredStatuses = (inputPlaces: StudyPlace[]) => {
+    const storedStatuses = readStoredStatuses();
+
+    return inputPlaces.map((place) => ({
+      ...place,
+      status: storedStatuses[String(place.id)] ?? place.status,
+    }));
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -64,11 +94,13 @@ export default function StudyPlacesMap() {
           .filter((place) => place.lat !== null && place.lon !== null)
           .map((place) => {
             const parsedId = Number(place.id);
+            const storedStatuses = readStoredStatuses();
+            const storedStatus = storedStatuses[String(parsedId)];
             return {
               id: parsedId,
               name: place.name,
               address: place.address,
-              status: place.verified ? "Atidaryta" : "Nežinomas statusas",
+              status: storedStatus ?? (place.verified ? "Atidaryta" : "Uždaryta"),
               wifi_speed: place.wifi_speed || "Nežinoma",
               noise_level: place.noise_level || "Nežinomas",
               power_availability: place.has_outlets ? "sufficient" : "limited",
@@ -78,12 +110,12 @@ export default function StudyPlacesMap() {
           })
           .filter((place) => Number.isFinite(place.id));
 
-        setPlaces(mappedPlaces.length > 0 ? mappedPlaces : fallbackPlaces);
+        setPlaces(mappedPlaces.length > 0 ? mappedPlaces : applyStoredStatuses(fallbackPlaces));
       } catch (err) {
         if (!cancelled) {
           const message = err instanceof Error ? err.message : "Nepavyko užkrauti žemėlapio vietų.";
           setMapError(`${message} Rodomos rezervinės vietos.`);
-          setPlaces(fallbackPlaces);
+          setPlaces(applyStoredStatuses(fallbackPlaces));
         }
       } finally {
         if (!cancelled) {
@@ -105,6 +137,31 @@ export default function StudyPlacesMap() {
     setSelectedPlace(place);
     setCurrentStatus(place.status);
     setShowSettings(true);
+  };
+
+  const saveStatus = () => {
+    if (!selectedPlace || !currentStatus) {
+      return;
+    }
+
+    setPlaces((currentPlaces) =>
+      currentPlaces.map((place) =>
+        place.id === selectedPlace.id ? { ...place, status: currentStatus } : place
+      )
+    );
+
+    setSelectedPlace((current) =>
+      current ? { ...current, status: currentStatus } : current
+    );
+
+    setMapError(null);
+
+    const nextStatuses = {
+      ...readStoredStatuses(),
+      [String(selectedPlace.id)]: currentStatus,
+    };
+    writeStoredStatuses(nextStatuses);
+    setShowSettings(false);
   };
 
   const openDetails = (place: StudyPlace) => {
@@ -218,13 +275,17 @@ export default function StudyPlacesMap() {
             onChange={(e) => setCurrentStatus(e.target.value)}
             style={{ marginTop: "8px", padding: "8px" }}
           >
-            <option value="Atidaryta">Atidaryta</option>
-            <option value="Vidutinis užimtumas">Vidutinis užimtumas</option>
-            <option value="Pilna">Pilna</option>
-            <option value="Uždaryta">Uždaryta</option>
+            {STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
           </select>
 
-          <div style={{ marginTop: "16px" }}>
+          <div style={{ marginTop: "16px", display: "flex", gap: "8px" }}>
+            <button type="button" onClick={saveStatus}>
+              Išsaugoti statusą
+            </button>
             <button type="button" onClick={() => setShowSettings(false)}>
               Uždaryti
             </button>
