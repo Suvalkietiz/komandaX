@@ -20,6 +20,8 @@
     "ts-jest": "^29.4.9"
   },
   "dependencies": {
+    "@paralleldrive/cuid2": "^3.3.0",
+    "es-set-tostringtag": "^2.1.0",
     "react-router-dom": "^7.13.1"
   }
 }
