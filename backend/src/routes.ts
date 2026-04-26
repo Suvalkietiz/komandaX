@@ -15,7 +15,7 @@ router.get("/reviews/study-place/:studyPlaceId", reviewController.getByStudyPlac
 
 router.post("/saved-places", savedPlacesController.savePlace);
 router.get("/saved-places", savedPlacesController.getSavedPlaces);
-router.delete("/saved-places/:studyPlaceId", savedPlacesController.removeSavedPlace);
+router.delete("/saved-places/:savedPlaceId", savedPlacesController.removeSavedPlace);
 
 router.get("/health", (_req, res) => {
   res.json({ status: "ok" });

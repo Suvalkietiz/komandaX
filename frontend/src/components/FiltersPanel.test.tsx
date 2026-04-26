@@ -17,10 +17,10 @@ describe("FiltersPanel", () => {
     render(<FiltersPanel filters={mockFilters} onChange={() => {}} />);
 
     expect(screen.getByLabelText(/WiFi/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Noise/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Power/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Type/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Working hours/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Triukšmo/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/El. lizdų/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Vietos/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Darbo/i)).toBeInTheDocument();
   });
 
   it("calls onChange when WiFi filter changes", async () => {

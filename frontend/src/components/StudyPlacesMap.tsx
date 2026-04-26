@@ -1,16 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import ReviewForm from "./ReviewForm";
+import { savePlace } from "../services/savedPlacesService";
+import { getStudyPlaces } from "../services/studyPlacesService";
+import { mapPlacesData } from "../data/mapPlacesData";
 import L from "leaflet";
 import type { LatLngExpression } from "leaflet";
 
 type StudyPlace = {
   id: number;
   name: string;
+  address: string;
   status: string;
+  wifi_speed: string;
+  noise_level: string;
+  power_availability: string;
+  has_outlets: boolean;
   position: LatLngExpression;
 };
+
+const fallbackPlaces: StudyPlace[] = mapPlacesData.map((place) => ({
+  id: place.id,
+  name: place.name,
+  address: place.address,
+  status: place.status,
+  wifi_speed: place.wifi_speed,
+  noise_level: place.noise_level,
+  power_availability: place.power_availability,
+  has_outlets: place.has_outlets,
+  position: [place.lat, place.lon] as LatLngExpression,
+}));
 
 const markerIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -20,31 +40,64 @@ const markerIcon = L.icon({
 });
 
 export default function StudyPlacesMap() {
+  const [places, setPlaces] = useState<StudyPlace[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<StudyPlace | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [savingPlaceId, setSavingPlaceId] = useState<number | null>(null);
+  const [mapLoading, setMapLoading] = useState(true);
+  const [mapError, setMapError] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState("");
 
-  const places: StudyPlace[] = [
-    {
-      id: 1,
-      name: "VILNIUS TECH biblioteka",
-      status: "Atidaryta",
-      position: [54.7223, 25.3376],
-    },
-    {
-      id: 2,
-      name: "Study Cafe",
-      status: "Vidutinis užimtumas",
-      position: [54.6872, 25.2797],
-    },
-    {
-      id: 3,
-      name: "Miesto skaitykla",
-      status: "Uždaryta",
-      position: [54.6895, 25.2682],
-    },
-  ];
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPlaces = async () => {
+      setMapLoading(true);
+      setMapError(null);
+
+      try {
+        const apiPlaces = await getStudyPlaces();
+        if (cancelled) return;
+
+        const mappedPlaces = apiPlaces
+          .filter((place) => place.lat !== null && place.lon !== null)
+          .map((place) => {
+            const parsedId = Number(place.id);
+            return {
+              id: parsedId,
+              name: place.name,
+              address: place.address,
+              status: place.verified ? "Atidaryta" : "Nežinomas statusas",
+              wifi_speed: place.wifi_speed || "Nežinoma",
+              noise_level: place.noise_level || "Nežinomas",
+              power_availability: place.has_outlets ? "sufficient" : "limited",
+              has_outlets: Boolean(place.has_outlets),
+              position: [place.lat as number, place.lon as number] as LatLngExpression,
+            };
+          })
+          .filter((place) => Number.isFinite(place.id));
+
+        setPlaces(mappedPlaces.length > 0 ? mappedPlaces : fallbackPlaces);
+      } catch (err) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : "Nepavyko užkrauti žemėlapio vietų.";
+          setMapError(`${message} Rodomos rezervinės vietos.`);
+          setPlaces(fallbackPlaces);
+        }
+      } finally {
+        if (!cancelled) {
+          setMapLoading(false);
+        }
+      }
+    };
+
+    loadPlaces();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const navigate = useNavigate();
 
@@ -61,6 +114,31 @@ export default function StudyPlacesMap() {
   const openReview = (place: StudyPlace) => {
     setSelectedPlace(place);
     setShowReview(true);
+  };
+
+  const handleSavePlace = async (place: StudyPlace) => {
+    try {
+      setSavingPlaceId(place.id);
+      await savePlace(place.id, {
+        id: place.id,
+        name: place.name,
+        address: place.address,
+        wifi_speed: place.wifi_speed,
+        noise_level: place.noise_level,
+        power_availability: place.power_availability,
+        has_outlets: place.has_outlets,
+      });
+      navigate("/saved-places");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Nepavyko išsaugoti vietos.";
+      if (message.toLowerCase().includes("already saved")) {
+        navigate("/saved-places");
+        return;
+      }
+      window.alert(message);
+    } finally {
+      setSavingPlaceId(null);
+    }
   };
 
   return (
@@ -95,12 +173,25 @@ export default function StudyPlacesMap() {
                   <button type="button" onClick={() => openReview(place)}>
                     Įvertinti vietą
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSavePlace(place)}
+                    disabled={savingPlaceId === place.id}
+                  >
+                    {savingPlaceId === place.id ? "Saugoma..." : "Išsaugoti vietą"}
+                  </button>
                 </div>
               </div>
             </Popup>
           </Marker>
         ))}
       </MapContainer>
+
+      {mapLoading && <div style={{ marginTop: "12px" }}>Kraunamos vietos...</div>}
+      {mapError && <div style={{ marginTop: "12px", color: "#dc2626" }}>{mapError}</div>}
+      {!mapLoading && !mapError && places.length === 0 && (
+        <div style={{ marginTop: "12px" }}>Nerasta vietų žemėlapiui.</div>
+      )}
 
       {showSettings && selectedPlace && (
         <div

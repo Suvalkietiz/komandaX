@@ -48,6 +48,7 @@ export function SearchControls({
             >
               <option value="distance">Arčiausios</option>
               <option value="newest">Naujausios</option>
+              <option value="rating">Geriausiai įvertintos</option>
             </select>
           </div>
         </div>

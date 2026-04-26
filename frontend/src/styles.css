@@ -26,6 +26,147 @@ textarea {
   font: inherit;
 }
 
+.saved-page {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.saved-header {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.saved-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.saved-header p {
+  margin: 8px 0 0;
+  color: #6b7280;
+}
+
+.saved-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.saved-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.saved-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.saved-action-button {
+  flex: 1;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saved-action-button:hover {
+  background: #dbeafe;
+}
+
+.saved-action-danger {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.saved-action-danger:hover {
+  background: #fee2e2;
+}
+
+.saved-status-box {
+  max-width: 760px;
+  margin: 28px auto;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  color: #334155;
+}
+
+.saved-status-error {
+  color: #b91c1c;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.saved-status-empty {
+  color: #64748b;
+}
+
+.saved-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.saved-modal-card {
+  width: min(520px, 100%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+}
+
+.saved-modal-close {
+  border: 1px solid #d1d5db;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 7px 12px;
+  margin-left: auto;
+  margin-bottom: 10px;
+  display: block;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.saved-modal-close:hover {
+  background: #f1f5f9;
+}
+
+.study-card-info-button {
+  width: 100%;
+  border: 1px solid #1d4ed8;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 9px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.study-card-info-button:hover {
+  background: #1d4ed8;
+  border-color: #1e40af;
+}
+
 .place-details-page {
   min-height: 100vh;
   background: #eef3f8;
@@ -261,6 +402,10 @@ textarea {
 }
 
 @media (max-width: 900px) {
+  .saved-actions {
+    flex-direction: column;
+  }
+
   .place-info-grid,
   .reviews-layout {
     grid-template-columns: 1fr;

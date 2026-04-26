@@ -37,9 +37,9 @@ describe("StudyPlacesPage", () => {
     });
 
     render(
-     <MemoryRouter>
-      <StudyPlacesPage />
-     </MemoryRouter>
+      <MemoryRouter>
+        <StudyPlacesPage />
+      </MemoryRouter>
     );
 
     await waitFor(() => {

@@ -11,6 +11,7 @@ import SavedPlaces from "../components/SavedPlaces";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "../services/nominatimService";
 import { SearchControls } from "../components/SearchControls";
+import { workingHoursCategoryMatches } from "../utils/workingHours";
 
 type FiltersState = {
   wifi_speed: string;
@@ -54,6 +55,8 @@ export function App() {
     if (filters.power_availability) params.append("powerAvailability", filters.power_availability);
     if (filters.working_hours) params.append("workingHours", filters.working_hours);
 
+    if (filters.sort) params.append("sort", filters.sort);
+
     return params.toString();
   };
 
@@ -95,20 +98,23 @@ export function App() {
       ? enriched.filter((place: any) => place.distance <= 2)
       : enriched;
 
-  // 3. sorting 
-  return filtered.sort((a: any, b: any) => {
+  // 3. frontend filtrai
+  const filteredByOptions = filtered
+    .filter((p: any) => !filtersToUse.wifi_speed || p.wifi_speed === filtersToUse.wifi_speed)
+    .filter((p: any) => !filtersToUse.noise_level || p.noise_level === filtersToUse.noise_level)
+    .filter((p: any) => !filtersToUse.place_type || p.place_type === filtersToUse.place_type)
+    .filter((p: any) => !filtersToUse.power_availability || p.power_availability === filtersToUse.power_availability)
+    .filter((p: any) => !filtersToUse.working_hours || workingHoursCategoryMatches(p.working_hours ?? "", filtersToUse.working_hours));
+
+  // 4. sorting
+  return filteredByOptions.sort((a: any, b: any) => {
     if (filtersToUse.sort === "distance") {
       return a.distance - b.distance;
-    }
-
+    } 
     if (filtersToUse.sort === "newest") {
-      return (
-        new Date(b.created_at).getTime() -
-        new Date(a.created_at).getTime()
-      );
+     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     }
-
-     return 0;
+    return 0;
    });
   };
 
