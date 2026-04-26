@@ -1,5 +1,5 @@
 import SearchBar from "./SearchBar";
-import "./searchControls.css";
+import "./SearchControls.css";
 
 type Props = {
   mode: "nearby" | "all";
